@@ -1,0 +1,2522 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>号段入库系统 · 原型</title>
+<style>
+:root {
+  --primary: #1677ff;
+  --primary-hover: #0958d9;
+  --primary-light: #e6f4ff;
+  --success: #52c41a;
+  --success-light: #f6ffed;
+  --warning: #faad14;
+  --warning-light: #fffbe6;
+  --danger: #ff4d4f;
+  --danger-light: #fff2f0;
+  --gray-1: #ffffff;
+  --gray-2: #fafafa;
+  --gray-3: #f5f5f5;
+  --gray-4: #f0f0f0;
+  --gray-5: #d9d9d9;
+  --gray-6: #bfbfbf;
+  --gray-7: #8c8c8c;
+  --gray-8: #595959;
+  --gray-9: #262626;
+  --border: #d9d9d9;
+  --radius: 6px;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.05);
+  --shadow: 0 2px 8px rgba(0,0,0,.12);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,.15);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; font-size: 14px; color: var(--gray-9); background: var(--gray-3); }
+
+/* ── Layout ── */
+.app { display: flex; height: 100vh; overflow: hidden; }
+
+/* ── Sider ── */
+.sider {
+  width: 200px; flex-shrink: 0;
+  background: #001529; color: rgba(255,255,255,.65);
+  display: flex; flex-direction: column;
+}
+.sider-logo { padding: 20px 16px 16px; border-bottom: 1px solid rgba(255,255,255,.08); }
+.sider-logo .title { font-size: 15px; font-weight: 700; color: #fff; }
+.sider-logo .sub { font-size: 11px; color: rgba(255,255,255,.45); margin-top: 2px; }
+.sider nav { flex: 1; padding: 8px 0; }
+.nav-group { padding: 8px 16px 4px; font-size: 11px; color: rgba(255,255,255,.3); text-transform: uppercase; letter-spacing: .06em; }
+.nav-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 16px; font-size: 13px; cursor: pointer;
+  transition: all .2s; border-radius: 0;
+  color: rgba(255,255,255,.65);
+}
+.nav-item:hover { background: rgba(255,255,255,.08); color: #fff; }
+.nav-item.active { background: var(--primary); color: #fff; }
+.nav-icon { width: 16px; text-align: center; }
+
+/* ── Main ── */
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.topbar {
+  height: 56px; background: #fff; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 24px; flex-shrink: 0;
+}
+.topbar-title { font-size: 16px; font-weight: 600; color: var(--gray-9); }
+.topbar-right { display: flex; align-items: center; gap: 12px; }
+.avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; cursor: pointer; }
+
+/* ── Content ── */
+.content { flex: 1; overflow-y: auto; padding: 24px; }
+
+/* ── Page ── */
+.page { display: none; }
+.page.active { display: block; }
+
+/* ── Card ── */
+.card { background: #fff; border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow-sm); }
+.card-header { padding: 16px 20px; border-bottom: 1px solid var(--gray-4); display: flex; align-items: center; justify-content: space-between; }
+.card-title { font-size: 15px; font-weight: 600; }
+.card-body { padding: 20px; }
+
+/* ── Stats ── */
+.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
+.stat-card { background: #fff; border-radius: var(--radius); border: 1px solid var(--border); padding: 20px; }
+.stat-label { font-size: 12px; color: var(--gray-7); margin-bottom: 8px; }
+.stat-value { font-size: 28px; font-weight: 700; color: var(--gray-9); }
+.stat-value.blue { color: var(--primary); }
+.stat-value.green { color: var(--success); }
+.stat-value.orange { color: var(--warning); }
+.stat-value.red { color: var(--danger); }
+.stat-change { font-size: 12px; color: var(--gray-7); margin-top: 4px; }
+
+/* ── Filter bar ── */
+.filter-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+.filter-bar .label { font-size: 13px; color: var(--gray-7); }
+
+/* ── Button ── */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 14px; border-radius: var(--radius);
+  font-size: 13px; cursor: pointer; border: 1px solid transparent;
+  transition: all .2s; font-weight: 500; white-space: nowrap;
+}
+.btn-primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+.btn-primary:hover { background: var(--primary-hover); border-color: var(--primary-hover); }
+.btn-default { background: #fff; color: var(--gray-8); border-color: var(--border); }
+.btn-default:hover { color: var(--primary); border-color: var(--primary); }
+.btn-danger { background: #fff; color: var(--danger); border-color: var(--danger); }
+.btn-success { background: var(--success); color: #fff; border-color: var(--success); }
+.btn-sm { padding: 4px 10px; font-size: 12px; }
+.btn-xs { padding: 2px 8px; font-size: 11px; border-radius: 4px; }
+
+/* ── Input ── */
+.input, .select {
+  height: 32px; padding: 0 11px; border: 1px solid var(--border);
+  border-radius: var(--radius); font-size: 13px; color: var(--gray-9);
+  outline: none; transition: border-color .2s; background: #fff;
+  width: 100%;
+}
+.input:focus, .select:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(22,119,255,.1); }
+.input::placeholder { color: var(--gray-6); }
+.input-sm { height: 28px; padding: 0 8px; font-size: 12px; }
+
+/* ── Form ── */
+.form-item { margin-bottom: 16px; }
+.form-item:last-child { margin-bottom: 0; }
+.form-label { font-size: 13px; color: var(--gray-8); margin-bottom: 6px; display: flex; align-items: center; gap: 4px; }
+.form-label .required { color: var(--danger); }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.form-hint { font-size: 11px; color: var(--gray-7); margin-top: 4px; }
+
+/* ── Table ── */
+.table-wrap { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--border); }
+table { width: 100%; border-collapse: collapse; }
+thead tr { background: var(--gray-3); }
+th { padding: 10px 14px; font-size: 12px; font-weight: 600; color: var(--gray-7); text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; }
+td { padding: 12px 14px; font-size: 13px; color: var(--gray-8); border-bottom: 1px solid var(--gray-4); vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tbody tr:hover td { background: var(--gray-2); }
+
+/* ── Tags / Badges ── */
+.tag { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+.tag-blue { background: var(--primary-light); color: var(--primary); }
+.tag-green { background: var(--success-light); color: var(--success); }
+.tag-orange { background: var(--warning-light); color: var(--warning); }
+.tag-red { background: var(--danger-light); color: var(--danger); }
+.tag-gray { background: var(--gray-4); color: var(--gray-7); }
+
+/* ── Progress ── */
+.progress-wrap { display: flex; align-items: center; gap: 8px; }
+.progress-bar { flex: 1; height: 6px; background: var(--gray-4); border-radius: 3px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 3px; background: var(--primary); transition: width .3s; }
+.progress-fill.warning { background: var(--warning); }
+.progress-fill.danger { background: var(--danger); }
+.progress-text { font-size: 11px; color: var(--gray-7); white-space: nowrap; }
+
+/* ── Alert exhausted ── */
+.row-exhausted td { background: #fff2f0 !important; }
+.row-warning td { background: #fffbe6 !important; }
+
+/* ── Modal ── */
+.modal-mask {
+  position: fixed; inset: 0; background: rgba(0,0,0,.45);
+  display: none; align-items: center; justify-content: center;
+  z-index: 1000;
+}
+.modal-mask.show { display: flex; }
+.modal {
+  background: #fff; border-radius: 8px; box-shadow: var(--shadow-lg);
+  width: 580px; max-width: 95vw; max-height: 90vh;
+  display: flex; flex-direction: column;
+  animation: modalIn .2s ease;
+}
+.modal-lg { width: 720px; }
+@keyframes modalIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+.modal-header { padding: 16px 20px; border-bottom: 1px solid var(--gray-4); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+.modal-header .title { font-size: 16px; font-weight: 600; }
+.modal-close { width: 28px; height: 28px; cursor: pointer; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: var(--gray-7); transition: all .2s; border: none; background: none; font-size: 16px; }
+.modal-close:hover { background: var(--gray-4); color: var(--gray-9); }
+.modal-body { padding: 20px; overflow-y: auto; flex: 1; }
+.modal-footer { padding: 12px 20px; border-top: 1px solid var(--gray-4); display: flex; justify-content: flex-end; gap: 8px; flex-shrink: 0; }
+
+/* ── Preview box ── */
+.preview-box { background: var(--primary-light); border: 1px dashed var(--primary); border-radius: var(--radius); padding: 12px 16px; margin-bottom: 16px; }
+.preview-box .preview-title { font-size: 12px; color: var(--primary); font-weight: 600; margin-bottom: 8px; }
+.preview-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.preview-item { font-size: 12px; }
+.preview-item .pkey { color: var(--gray-7); }
+.preview-item .pval { font-weight: 600; color: var(--primary); }
+
+/* ── Switch ── */
+.switch-wrap { display: flex; align-items: center; gap: 10px; padding: 12px 16px; background: var(--gray-2); border-radius: var(--radius); border: 1px solid var(--gray-4); margin-bottom: 12px; }
+.switch { position: relative; width: 36px; height: 20px; flex-shrink: 0; }
+.switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+.switch-slider { position: absolute; inset: 0; background: var(--gray-5); border-radius: 10px; cursor: pointer; transition: .2s; }
+.switch-slider:before { content: ''; position: absolute; width: 16px; height: 16px; left: 2px; top: 2px; background: #fff; border-radius: 50%; transition: .2s; }
+.switch input:checked + .switch-slider { background: var(--primary); }
+.switch input:checked + .switch-slider:before { transform: translateX(16px); }
+.switch-label { font-size: 13px; color: var(--gray-8); }
+.switch-desc { font-size: 11px; color: var(--gray-6); margin-top: 1px; }
+
+/* ── Upload ── */
+.upload-zone { border: 2px dashed var(--border); border-radius: var(--radius); padding: 32px 20px; text-align: center; cursor: pointer; transition: all .2s; }
+.upload-zone:hover { border-color: var(--primary); background: var(--primary-light); }
+.upload-icon { font-size: 32px; margin-bottom: 8px; }
+.upload-text { font-size: 14px; color: var(--gray-8); margin-bottom: 4px; }
+.upload-hint { font-size: 12px; color: var(--gray-6); }
+
+/* ── Divider ── */
+.divider { height: 1px; background: var(--gray-4); margin: 16px 0; }
+.divider-text { text-align: center; position: relative; margin: 16px 0; }
+.divider-text::before { content: ''; position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: var(--gray-4); }
+.divider-text span { position: relative; background: #fff; padding: 0 12px; font-size: 12px; color: var(--gray-6); }
+
+/* ── Tabs ── */
+.tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+.tab { padding: 10px 16px; font-size: 13px; cursor: pointer; border-bottom: 2px solid transparent; color: var(--gray-7); transition: all .2s; margin-bottom: -1px; }
+.tab:hover { color: var(--primary); }
+.tab.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
+
+/* ── Breadcrumb ── */
+.breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--gray-6); margin-bottom: 16px; }
+.breadcrumb a { color: var(--gray-6); text-decoration: none; cursor: pointer; }
+.breadcrumb a:hover { color: var(--primary); }
+.breadcrumb .sep { color: var(--gray-5); }
+.breadcrumb .current { color: var(--gray-9); }
+
+/* ── Notification dot ── */
+.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.dot-green { background: var(--success); }
+.dot-red { background: var(--danger); }
+.dot-orange { background: var(--warning); }
+
+/* ── Empty ── */
+.empty { text-align: center; padding: 48px 20px; color: var(--gray-6); }
+.empty-icon { font-size: 40px; margin-bottom: 12px; }
+.empty-text { font-size: 14px; }
+
+/* ── Checkbox ── */
+.checkbox-wrap { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.checkbox-wrap input[type=checkbox] { width: 15px; height: 15px; accent-color: var(--primary); cursor: pointer; }
+
+/* ── Tooltip ── */
+.tooltip-icon { color: var(--gray-6); cursor: help; font-size: 12px; }
+
+/* ── Step indicator ── */
+.steps { display: flex; align-items: center; gap: 0; margin-bottom: 24px; }
+.step { display: flex; flex-direction: column; align-items: center; flex: 1; position: relative; }
+.step:not(:last-child)::after { content: ''; position: absolute; top: 14px; left: 50%; width: 100%; height: 2px; background: var(--gray-4); z-index: 0; }
+.step.done:not(:last-child)::after { background: var(--primary); }
+.step-circle { width: 28px; height: 28px; border-radius: 50%; background: var(--gray-4); color: var(--gray-6); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; z-index: 1; position: relative; }
+.step.done .step-circle { background: var(--primary); color: #fff; }
+.step.active .step-circle { background: var(--primary); color: #fff; box-shadow: 0 0 0 4px var(--primary-light); }
+.step-label { font-size: 11px; color: var(--gray-7); margin-top: 6px; }
+.step.active .step-label { color: var(--primary); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ── Sider ── -->
+  <aside class="sider">
+    <div class="sider-logo">
+      <div class="title">号段入库系统</div>
+      <div class="sub">三川发行平台</div>
+    </div>
+    <nav>
+      <div class="nav-group">号段管理</div>
+      <div class="nav-item active" onclick="switchPage('page-list', this)">
+        <span class="nav-icon">▤</span> 号段入库
+      </div>
+      <div class="nav-item" onclick="switchPage('page-pickup', this)">
+        <span class="nav-icon">↗</span> 取号出库
+      </div>
+      <div class="nav-item" onclick="switchPage('page-entry', this)">
+        <span class="nav-icon">☰</span> 取号记录
+      </div>
+      <div class="nav-group">数据同步</div>
+      <div class="nav-item" onclick="switchPage('page-sync', this)">
+        <span class="nav-icon">⇄</span> 发货明细同步
+      </div>
+      <div class="nav-item" onclick="switchPage('page-log', this)">
+        <span class="nav-icon">≡</span> 同步记录
+      </div>
+    </nav>
+  </aside>
+
+  <!-- ── Main ── -->
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-title" id="page-title">号段入库</div>
+      <div class="topbar-right">
+        <span style="font-size:12px;color:var(--gray-7);">竹笛（张晓晓）</span>
+        <div class="avatar">竹</div>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- ════ 页面1：号段列表 ════ -->
+      <div class="page active" id="page-list">
+        <!-- 统计卡片 -->
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-label">号段总批次</div>
+            <div class="stat-value blue">12</div>
+            <div class="stat-change">本月新增 3 批</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">号段总量（张）</div>
+            <div class="stat-value">48,600</div>
+            <div class="stat-change">累计入库</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">已取号量（张）</div>
+            <div class="stat-value green">31,240</div>
+            <div class="stat-change">利用率 64.3%</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">库存耗尽批次</div>
+            <div class="stat-value red">2</div>
+            <div class="stat-change">需补充申请</div>
+          </div>
+        </div>
+
+        <!-- 列表卡片 -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">号段记录</div>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <input class="input" style="width:160px;" placeholder="搜索SN / 业主">
+              <select class="select" style="width:110px;">
+                <option>全部状态</option>
+                <option>正常</option>
+                <option>即将耗尽</option>
+                <option>已耗尽</option>
+              </select>
+              <select class="select" style="width:110px;">
+                <option>全部芯片</option>
+                <option>加密</option>
+                <option>双算法</option>
+              </select>
+              <select class="select" style="width:120px;">
+                <option>全部发行方</option>
+                <option>三川科技</option>
+                <option>长城汽车</option>
+              </select>
+              <select class="select" style="width:130px;">
+                <option>全部一级渠道</option>
+                <option>三川电商</option>
+                <option>跨度</option>
+                <option>营业厅</option>
+                <option>支付宝中心化</option>
+                <option>抖音代运营</option>
+              </select>
+              <select class="select" style="width:110px;">
+                <option>全部产品型号</option>
+                <option>139C</option>
+                <option>139B</option>
+              </select>
+              <button class="btn btn-default" onclick="openModal('modal-export')" style="display:inline-flex;align-items:center;gap:5px;">
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 1v9M8 10l-3-3M8 10l3-3M2 12v1a1 1 0 001 1h10a1 1 0 001-1v-1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                导出
+              </button>
+              <button class="btn btn-primary" onclick="openModal('modal-import')">＋ 录入号段</button>
+            </div>
+          </div>
+          <div class="table-wrap" style="border:none;border-radius:0;">
+            <table>
+              <thead>
+                <tr>
+                  <th>批次ID</th>
+                  <th>入库日期</th>
+                  <th>业主</th>
+                  <th>一级渠道</th>
+                  <th>芯片类型</th>
+                  <th>起始 SN</th>
+                  <th>终止 SN</th>
+                  <th>使用进度</th>
+                  <th>是否付费</th>
+                  <th>支付宝同步</th>
+                  <th>状态</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="row-exhausted">
+                  <td><span style="font-family:monospace;font-size:12px;">SG-2026-001</span></td>
+                  <td>2026-03-01</td>
+                  <td>北京速通</td>
+                  <td>三川电商</td>
+                  <td>加密</td>
+                  <td style="font-family:monospace;font-size:12px;">SN10000001</td>
+                  <td style="font-family:monospace;font-size:12px;">SN10005000</td>
+                  <td>
+                    <div class="progress-wrap">
+                      <div class="progress-bar"><div class="progress-fill danger" style="width:100%"></div></div>
+                      <span class="progress-text">5000/5000</span>
+                    </div>
+                  </td>
+                  <td><span class="tag tag-blue">付费</span></td>
+                  <td><span class="dot dot-green"></span> 已同步</td>
+                  <td><span class="tag tag-red">已耗尽</span></td>
+                  <td>
+                    <button class="btn btn-xs btn-default" onclick="openDetail({id:'SG-2026-001',date:'2026-03-01',owner:'北京速通',channel:'三川电商',chip:'加密',paid:true,snStart:'SN10000001',snEnd:'SN10005000',icStart:'IC10000001',icEnd:'IC10005000',total:5000,used:5000,syncStatus:'已同步',syncTime:'2026-03-02 03:00',status:'已耗尽'})">详情</button>
+                    <button class="btn btn-xs btn-default" style="margin-left:4px;color:var(--gray-5);border-color:var(--gray-4);cursor:not-allowed;" onclick="openDeleteBlocked('SG-2026-001', 5000)">删除</button>
+                  </td>
+                </tr>
+                <tr class="row-warning">
+                  <td><span style="font-family:monospace;font-size:12px;">SG-2026-002</span></td>
+                  <td>2026-03-15</td>
+                  <td>北京速通</td>
+                  <td>支付宝中心化</td>
+                  <td>双算法</td>
+                  <td style="font-family:monospace;font-size:12px;">SN20000001</td>
+                  <td style="font-family:monospace;font-size:12px;">SN20010000</td>
+                  <td>
+                    <div class="progress-wrap">
+                      <div class="progress-bar"><div class="progress-fill warning" style="width:88%"></div></div>
+                      <span class="progress-text">8800/10000</span>
+                    </div>
+                  </td>
+                  <td><span class="tag tag-blue">付费</span></td>
+                  <td><span class="dot dot-green"></span> 已同步</td>
+                  <td><span class="tag tag-orange">即将耗尽</span></td>
+                  <td>
+                    <button class="btn btn-xs btn-primary" onclick="switchPage('page-pickup', document.querySelectorAll('.nav-item')[1])">取号</button>
+                    <button class="btn btn-xs btn-default" style="margin-left:4px;" onclick="openDetail({id:'SG-2026-002',date:'2026-03-15',owner:'北京速通',channel:'支付宝中心化',chip:'双算法',paid:true,snStart:'SN20000001',snEnd:'SN20010000',icStart:'IC20000001',icEnd:'IC20010000',total:10000,used:8800,syncStatus:'已同步',syncTime:'2026-03-16 02:00',status:'即将耗尽'})">详情</button>
+                    <button class="btn btn-xs btn-default" style="margin-left:4px;color:var(--gray-5);border-color:var(--gray-4);cursor:not-allowed;" onclick="openDeleteBlocked('SG-2026-002', 8800)">删除</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td><span style="font-family:monospace;font-size:12px;">SG-2026-003</span></td>
+                  <td>2026-04-01</td>
+                  <td>北京速通</td>
+                  <td>跨度</td>
+                  <td>加密</td>
+                  <td style="font-family:monospace;font-size:12px;">SN30000001</td>
+                  <td style="font-family:monospace;font-size:12px;">SN30008000</td>
+                  <td>
+                    <div class="progress-wrap">
+                      <div class="progress-bar"><div class="progress-fill" style="width:42%"></div></div>
+                      <span class="progress-text">3360/8000</span>
+                    </div>
+                  </td>
+                  <td><span class="tag tag-gray">免费</span></td>
+                  <td><span class="dot dot-orange"></span> 未同步</td>
+                  <td><span class="tag tag-green">正常</span></td>
+                  <td>
+                    <button class="btn btn-xs btn-primary" onclick="switchPage('page-pickup', document.querySelectorAll('.nav-item')[1])">取号</button>
+                    <button class="btn btn-xs btn-default" style="margin-left:4px;" onclick="openDetail({id:'SG-2026-003',date:'2026-04-01',owner:'北京速通',channel:'跨度',chip:'加密',paid:false,snStart:'SN30000001',snEnd:'SN30008000',icStart:'IC30000001',icEnd:'IC30008000',total:8000,used:3360,syncStatus:'未同步',syncTime:'—',status:'正常'})">详情</button>
+                    <button class="btn btn-xs btn-default" style="margin-left:4px;color:var(--gray-5);border-color:var(--gray-4);cursor:not-allowed;" onclick="openDeleteBlocked('SG-2026-003', 3360)">删除</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td><span style="font-family:monospace;font-size:12px;">SG-2026-004</span></td>
+                  <td>2026-04-10</td>
+                  <td>北京速通</td>
+                  <td>抖音代运营</td>
+                  <td>双算法</td>
+                  <td style="font-family:monospace;font-size:12px;">SN40000001</td>
+                  <td style="font-family:monospace;font-size:12px;">SN40020000</td>
+                  <td>
+                    <div class="progress-wrap">
+                      <div class="progress-bar"><div class="progress-fill" style="width:8%"></div></div>
+                      <span class="progress-text">1600/20000</span>
+                    </div>
+                  </td>
+                  <td><span class="tag tag-blue">付费</span></td>
+                  <td><span class="dot dot-green"></span> 已同步</td>
+                  <td><span class="tag tag-green">正常</span></td>
+                  <td>
+                    <button class="btn btn-xs btn-primary" onclick="switchPage('page-pickup', document.querySelectorAll('.nav-item')[1])">取号</button>
+                    <button class="btn btn-xs btn-default" style="margin-left:4px;" onclick="openDetail({id:'SG-2026-004',date:'2026-04-10',owner:'北京速通',channel:'抖音代运营',chip:'双算法',paid:true,snStart:'SN40000001',snEnd:'SN40020000',icStart:'IC40000001',icEnd:'IC40020000',total:20000,used:1600,syncStatus:'已同步',syncTime:'2026-04-11 02:00',status:'正常'})">详情</button>
+                    <button class="btn btn-xs btn-default" style="margin-left:4px;color:var(--gray-5);border-color:var(--gray-4);cursor:not-allowed;" onclick="openDeleteBlocked('SG-2026-004', 1600)">删除</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td><span style="font-family:monospace;font-size:12px;">SG-2026-005</span></td>
+                  <td>2026-04-13</td>
+                  <td>北京速通</td>
+                  <td>营业厅</td>
+                  <td>加密</td>
+                  <td style="font-family:monospace;font-size:12px;">SN60000001</td>
+                  <td style="font-family:monospace;font-size:12px;">SN60005000</td>
+                  <td>
+                    <div class="progress-wrap">
+                      <div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div>
+                      <span class="progress-text" style="color:var(--gray-5);">0/5000</span>
+                    </div>
+                  </td>
+                  <td><span class="tag tag-blue">付费</span></td>
+                  <td><span class="dot dot-orange"></span> 未同步</td>
+                  <td><span class="tag tag-green">正常</span></td>
+                  <td>
+                    <button class="btn btn-xs btn-primary" onclick="switchPage('page-pickup', document.querySelectorAll('.nav-item')[1])">取号</button>
+                    <button class="btn btn-xs btn-default" style="margin-left:4px;" onclick="openDetail({id:'SG-2026-005',date:'2026-04-13',owner:'北京速通',channel:'营业厅',chip:'加密',paid:true,snStart:'SN60000001',snEnd:'SN60005000',icStart:'IC60000001',icEnd:'IC60005000',total:5000,used:0,syncStatus:'未同步',syncTime:'—',status:'正常'})">详情</button>
+                    <button class="btn btn-xs" style="margin-left:4px;color:var(--danger);border:1px solid var(--danger);background:#fff;border-radius:4px;padding:2px 8px;font-size:11px;cursor:pointer;" onclick="openDeleteConfirm('SG-2026-005')">删除</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div style="padding:12px 20px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--gray-4);">
+            <span style="font-size:12px;color:var(--gray-7);">共 12 条记录</span>
+            <div style="display:flex;gap:6px;">
+              <button class="btn btn-default btn-sm">上一页</button>
+              <button class="btn btn-primary btn-sm">1</button>
+              <button class="btn btn-default btn-sm">2</button>
+              <button class="btn btn-default btn-sm">3</button>
+              <button class="btn btn-default btn-sm">下一页</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════ 页面2：取号出库 ════ -->
+      <div class="page" id="page-pickup">
+        <div class="breadcrumb">
+          <a onclick="switchPage('page-list', document.querySelectorAll('.nav-item')[0])">号段列表</a>
+          <span class="sep">/</span>
+          <span class="current">取号出库</span>
+        </div>
+
+        <div class="steps">
+          <div class="step done">
+            <div class="step-circle">✓</div>
+            <div class="step-label">选择号段</div>
+          </div>
+          <div class="step active">
+            <div class="step-circle">2</div>
+            <div class="step-label">填写取号信息</div>
+          </div>
+          <div class="step">
+            <div class="step-circle">3</div>
+            <div class="step-label">确认出库</div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 360px;gap:20px;">
+          <!-- 左侧表单 -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">取号信息</div>
+              <span class="tag tag-orange">当前号段：SG-2026-002 · 剩余 1,200 张</span>
+            </div>
+            <div class="card-body">
+
+              <div class="form-row">
+                <div class="form-item">
+                  <div class="form-label"><span class="required">*</span> 取号数量</div>
+                  <input class="input" type="number" placeholder="请输入取号数量" id="pickup-qty" oninput="calcPickup()" value="500">
+                  <div class="form-hint">剩余可用：1,200 张</div>
+                </div>
+                <div class="form-item">
+                  <div class="form-label">产品型号</div>
+                  <select class="select">
+                    <option value="">请选择产品型号</option>
+                    <option>139C</option>
+                    <option>139B</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-item">
+                  <div class="form-label">二级渠道分类</div>
+                  <select class="select">
+                    <option value="">请选择二级渠道（选填）</option>
+                    <option>支付宝小程序渠道</option>
+                    <option>安心办渠道</option>
+                    <option>线下经销渠道</option>
+                  </select>
+                </div>
+                <div class="form-item">
+                  <div class="form-label">渠道类型 <span style="font-size:11px;color:var(--gray-6);">（自动带出）</span></div>
+                  <input class="input" id="channel-type" value="" placeholder="根据二级渠道自动带出" style="background:var(--gray-3);color:var(--gray-7);" readonly>
+                </div>
+              </div>
+
+              <div class="form-item">
+                <div class="form-label">合同号</div>
+                <input class="input" placeholder="选填，可备货后补传" value="">
+              </div>
+
+              <div class="form-item">
+                <div class="form-label">路费券</div>
+                <select class="select">
+                  <option value="">不关联路费券</option>
+                  <option>路费券A-满100减20</option>
+                  <option>路费券B-满50减8</option>
+                </select>
+                <div class="form-hint">⚠ 路费券逻辑方案待相关人员提供</div>
+              </div>
+
+              <div class="divider"></div>
+
+              <!-- 支付宝同步 -->
+              <div style="margin-bottom:12px;font-size:13px;font-weight:600;color:var(--gray-8);">支付宝数据同步</div>
+              <div class="switch-wrap">
+                <label class="switch">
+                  <input type="checkbox" id="sync-alipay" onchange="toggleSyncDesc()">
+                  <span class="switch-slider"></span>
+                </label>
+                <div>
+                  <div class="switch-label">是否同步支付宝渠道订单</div>
+                  <div class="switch-desc" id="sync-desc">开启后，本次出库记录将作为端外订单同步至支付宝（风控备案）</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 右侧预览 -->
+          <div style="display:flex;flex-direction:column;gap:16px;">
+            <div class="card">
+              <div class="card-header"><div class="card-title">自动带出信息</div></div>
+              <div class="card-body">
+                <div class="preview-box">
+                  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                    <div class="preview-title" style="margin-bottom:0;">📋 系统自动计算结果</div>
+                    <button class="btn btn-xs btn-default" onclick="copySnRange()" style="font-size:11px;display:inline-flex;align-items:center;gap:4px;">
+                      <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><rect x="5" y="5" width="9" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M11 5V3.5A1.5 1.5 0 009.5 2h-6A1.5 1.5 0 002 3.5v6A1.5 1.5 0 003.5 11H5" stroke="currentColor" stroke-width="1.5"/></svg>
+                      复制起止SN
+                    </button>
+                  </div>
+                  <div class="preview-grid">
+                    <div class="preview-item"><span class="pkey">起始 SN：</span><br><span class="pval" id="preview-sn-start">SN20008801</span></div>
+                    <div class="preview-item"><span class="pkey">终止 SN：</span><br><span class="pval" id="preview-sn-end">SN20009300</span></div>
+                    <div class="preview-item"><span class="pkey">起始 IC 卡号：</span><br><span class="pval" id="preview-ic-start">IC88010001</span></div>
+                    <div class="preview-item"><span class="pkey">终止 IC 卡号：</span><br><span class="pval" id="preview-ic-end">IC88010500</span></div>
+                  </div>
+                </div>
+                <div style="font-size:12px;color:var(--gray-7);line-height:1.8;">
+                  <div>取号数量：<strong id="preview-qty">500</strong> 张</div>
+                  <div>取号后剩余：<strong id="preview-remain" style="color:var(--warning);">700</strong> 张</div>
+                  <div>号段利用率：<strong id="preview-rate" style="color:var(--primary);">95%</strong></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header"><div class="card-title">操作确认</div></div>
+              <div class="card-body">
+                <div style="font-size:12px;color:var(--gray-7);margin-bottom:16px;line-height:1.8;">
+                  请确认以上信息无误后提交出库。提交后将更新号段使用数量，如勾选同步则推送支付宝。
+                </div>
+                <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="openModal('modal-confirm-pickup')">确认出库</button>
+                <button class="btn btn-default" style="width:100%;justify-content:center;margin-top:8px;" onclick="switchPage('page-list', document.querySelectorAll('.nav-item')[0])">取消返回</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════ 页面3：发货明细同步 ════ -->
+      <div class="page" id="page-sync">
+        <div class="tabs">
+          <div class="tab active" onclick="switchTab(this,'tab-upload')">上传发货明细</div>
+          <div class="tab" onclick="switchTab(this,'tab-schedule')">定时任务配置</div>
+        </div>
+
+        <div id="tab-upload">
+          <div style="display:grid;grid-template-columns:1fr 320px;gap:20px;">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">上传菜鸟发货明细</div>
+                <span style="font-size:12px;color:var(--gray-7);">上传后系统将于 T+1 自动同步至支付宝</span>
+              </div>
+              <div class="card-body">
+                <div class="upload-zone" onclick="simulateUpload()">
+                  <div class="upload-icon">📄</div>
+                  <div class="upload-text">点击或拖拽文件到此处上传</div>
+                  <div class="upload-hint">支持 Excel(.xlsx) / CSV 格式，文件大小不超过 10MB</div>
+                </div>
+
+                <div class="divider-text"><span>或</span></div>
+
+                <div style="background:var(--gray-2);border-radius:var(--radius);padding:16px;">
+                  <div style="font-size:13px;font-weight:600;color:var(--gray-8);margin-bottom:8px;">影刀自动化方案</div>
+                  <div style="font-size:12px;color:var(--gray-7);line-height:1.8;margin-bottom:12px;">若无法获取菜鸟 API，由运营配置影刀自动化脚本，每日定时从菜鸟后台抓取并上传至此。</div>
+                  <button class="btn btn-default btn-sm">查看影刀配置文档</button>
+                </div>
+
+                <div class="divider"></div>
+
+                <div style="font-size:13px;font-weight:600;color:var(--gray-8);margin-bottom:12px;">字段映射预览</div>
+                <div class="table-wrap">
+                  <table>
+                    <thead>
+                      <tr><th>菜鸟字段</th><th>系统字段</th><th>说明</th></tr>
+                    </thead>
+                    <tbody>
+                      <tr><td>货品编码</td><td>goods_code</td><td>商品唯一标识</td></tr>
+                      <tr><td>货品名称</td><td>goods_name</td><td>商品名称</td></tr>
+                      <tr><td>仓库</td><td>warehouse</td><td>出货仓库</td></tr>
+                      <tr><td>ERP单号</td><td>erp_order_no</td><td>ERP系统订单号</td></tr>
+                      <tr><td>发货时间</td><td>ship_time</td><td>菜鸟发货时间</td></tr>
+                      <tr><td>收货人</td><td>receiver</td><td>收货方信息</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- 右侧状态 -->
+            <div style="display:flex;flex-direction:column;gap:16px;">
+              <div class="card">
+                <div class="card-header"><div class="card-title">同步状态</div></div>
+                <div class="card-body">
+                  <div style="display:flex;flex-direction:column;gap:12px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;background:var(--success-light);border-radius:var(--radius);">
+                      <div>
+                        <div style="font-size:12px;font-weight:600;color:var(--success);">昨日同步</div>
+                        <div style="font-size:11px;color:var(--gray-7);">2026-04-12 02:00</div>
+                      </div>
+                      <span class="tag tag-green">成功</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;background:var(--primary-light);border-radius:var(--radius);">
+                      <div>
+                        <div style="font-size:12px;font-weight:600;color:var(--primary);">今日任务</div>
+                        <div style="font-size:11px;color:var(--gray-7);">计划 2026-04-14 02:00</div>
+                      </div>
+                      <span class="tag tag-blue">待执行</span>
+                    </div>
+                  </div>
+                  <div class="divider"></div>
+                  <div style="font-size:12px;color:var(--gray-7);line-height:1.8;">
+                    <div>近 7 日同步成功率</div>
+                    <div style="font-size:22px;font-weight:700;color:var(--success);">100%</div>
+                    <div>累计同步记录：<strong>12,480</strong> 条</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-header"><div class="card-title">支付宝同步说明</div></div>
+                <div class="card-body" style="font-size:12px;color:var(--gray-7);line-height:1.8;">
+                  <p>同步至支付宝的数据用于：</p>
+                  <p>① <strong>业绩校验</strong>：对账号段池与激活数量</p>
+                  <p>② <strong>风控备案</strong>：端外订单合规记录</p>
+                  <div style="margin-top:12px;padding:10px;background:var(--warning-light);border-radius:var(--radius);color:#92400e;">
+                    ⚠ 支付宝接口规范待确认，当前为示意状态
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-schedule" style="display:none;">
+          <div class="card">
+            <div class="card-header"><div class="card-title">定时任务配置</div></div>
+            <div class="card-body">
+              <div class="form-row">
+                <div class="form-item">
+                  <div class="form-label">同步频次</div>
+                  <select class="select">
+                    <option selected>每日一次（T+1）</option>
+                    <option>实时同步</option>
+                    <option>每小时</option>
+                  </select>
+                </div>
+                <div class="form-item">
+                  <div class="form-label">执行时间</div>
+                  <input class="input" type="time" value="02:00">
+                </div>
+              </div>
+              <button class="btn btn-primary">保存配置</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════ 页面4：同步记录 ════ -->
+      <div class="page" id="page-log">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">支付宝同步记录</div>
+            <div style="display:flex;gap:8px;">
+              <select class="select" style="width:140px;">
+                <option>全部类型</option>
+                <option>号码池</option>
+                <option>端外订单</option>
+                <option>发货明细</option>
+              </select>
+              <select class="select" style="width:120px;">
+                <option>全部状态</option>
+                <option>成功</option>
+                <option>失败</option>
+              </select>
+            </div>
+          </div>
+          <div class="table-wrap" style="border:none;border-radius:0;">
+            <table>
+              <thead>
+                <tr><th>同步时间</th><th>同步类型</th><th>触发方式</th><th>数据量</th><th>状态</th><th>耗时</th><th>操作</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>2026-04-13 14:32:11</td><td><span class="tag tag-blue">端外订单</span></td><td>手动</td><td>1 条</td><td><span class="tag tag-green">成功</span></td><td>320ms</td><td><button class="btn btn-xs btn-default">详情</button></td></tr>
+                <tr><td>2026-04-13 02:00:05</td><td><span class="tag tag-gray">发货明细</span></td><td>定时任务</td><td>248 条</td><td><span class="tag tag-green">成功</span></td><td>1.2s</td><td><button class="btn btn-xs btn-default">详情</button></td></tr>
+                <tr><td>2026-04-12 16:20:44</td><td><span class="tag tag-blue">号码池</span></td><td>入库触发</td><td>20000 条</td><td><span class="tag tag-green">成功</span></td><td>2.8s</td><td><button class="btn btn-xs btn-default">详情</button></td></tr>
+                <tr><td>2026-04-12 02:00:08</td><td><span class="tag tag-gray">发货明细</span></td><td>定时任务</td><td>315 条</td><td><span class="tag tag-green">成功</span></td><td>1.5s</td><td><button class="btn btn-xs btn-default">详情</button></td></tr>
+                <tr><td>2026-04-11 09:15:22</td><td><span class="tag tag-blue">端外订单</span></td><td>手动</td><td>1 条</td><td><span class="tag tag-red">失败</span></td><td>超时</td><td><button class="btn btn-xs btn-danger">重试</button><button class="btn btn-xs btn-default" style="margin-left:4px;">详情</button></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ 录入记录页 ══ -->
+      <div class="page" id="page-entry">
+        <div class="card">
+          <!-- 筛选栏 -->
+          <div style="padding:14px 20px;border-bottom:1px solid var(--gray-4);">
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
+              <input class="input" style="width:130px;" placeholder="请输入批次ID">
+              <input class="input" style="width:130px;" placeholder="请输入设备SN">
+              <input class="input" style="width:130px;" placeholder="请输入开始SN">
+              <input class="input" style="width:130px;" placeholder="请输入结束SN">
+              <select class="select" style="width:150px;">
+                <option value="">请选择一级渠道</option>
+                <option>三川电商</option>
+                <option>跨度</option>
+                <option>营业厅</option>
+                <option>支付宝中心化</option>
+                <option>抖音代运营</option>
+              </select>
+              <select class="select" style="width:150px;">
+                <option value="">请选择所属渠道</option>
+                <option>三川电商</option>
+                <option>跨度</option>
+                <option>营业厅</option>
+                <option>支付宝中心化</option>
+                <option>抖音代运营</option>
+              </select>
+              <input class="input" style="width:130px;" type="date" placeholder="开始时间">
+              <span style="line-height:32px;color:var(--gray-6);font-size:12px;">至</span>
+              <input class="input" style="width:130px;" type="date" placeholder="结束时间">
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
+              <select class="select" style="width:150px;">
+                <option value="">请选择渠道类型</option>
+                <option>线下收费站ETC禁用</option>
+                <option>电商</option>
+              </select>
+              <select class="select" style="width:130px;">
+                <option value="">请选择发行方</option>
+                <option>北京速通</option>
+              </select>
+              <input class="input" style="width:130px;" placeholder="请输入路费券名称">
+              <input class="input" style="width:110px;" placeholder="请输入备注">
+              <input class="input" style="width:110px;" placeholder="请输入创建人">
+              <button class="btn btn-primary" style="padding:0 16px;">查询</button>
+              <button class="btn btn-default" style="padding:0 16px;">重置</button>
+              <button class="btn btn-default" style="padding:0 16px;display:inline-flex;align-items:center;gap:4px;">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 1v9M8 10l-3-3M8 10l3-3M2 12v1a1 1 0 001 1h10a1 1 0 001-1v-1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                下载
+              </button>
+              <button class="btn btn-default" style="padding:0 16px;">批量上传</button>
+            </div>
+          </div>
+          <!-- 表格 -->
+          <div class="table-wrap" style="border:none;border-radius:0;">
+            <table>
+              <thead>
+                <tr>
+                  <th>批次ID</th>
+                  <th>一级渠道</th>
+                  <th>渠道编码</th>
+                  <th>录入时间</th>
+                  <th>开始SN</th>
+                  <th>结束SN</th>
+                  <th>开始卡号</th>
+                  <th>结束卡号</th>
+                  <th>设备型号</th>
+                  <th>渠道类型</th>
+                  <th>渠道名称</th>
+                  <th>路费券id</th>
+                  <th>路费券名称</th>
+                  <th>备注</th>
+                  <th>更新时间</th>
+                  <th>创建人</th>
+                  <th>录入人</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="entry-tbody">
+              </tbody>
+            </table>
+          </div>
+          <div style="padding:12px 20px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--gray-4);">
+            <span style="font-size:12px;color:var(--gray-7);">共 48 条记录</span>
+            <div style="display:flex;gap:6px;">
+              <button class="btn btn-default" style="font-size:12px;padding:0 10px;">上一页</button>
+              <button class="btn btn-primary" style="font-size:12px;padding:0 10px;">1</button>
+              <button class="btn btn-default" style="font-size:12px;padding:0 10px;">2</button>
+              <button class="btn btn-default" style="font-size:12px;padding:0 10px;">3</button>
+              <button class="btn btn-default" style="font-size:12px;padding:0 10px;">下一页</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ════════ 弹窗：号段录入 ════════ -->
+<div class="modal-mask" id="modal-import">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="title">号段入库</div>
+      <button class="modal-close" onclick="closeModal('modal-import')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-item">
+          <div class="form-label"><span class="required">*</span> 入库日期</div>
+          <input class="input" type="date" value="2026-04-13">
+        </div>
+        <div class="form-item">
+          <div class="form-label"><span class="required">*</span> 业主</div>
+          <select class="select">
+            <option value="">请选择业主</option>
+            <option>北京速通</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-item">
+          <div class="form-label"><span class="required">*</span> 一级渠道分类</div>
+          <select class="select">
+            <option value="">请选择一级渠道</option>
+            <option>三川电商</option>
+            <option>跨度</option>
+            <option>营业厅</option>
+            <option>支付宝中心化</option>
+            <option>抖音代运营</option>
+          </select>
+        </div>
+        <div class="form-item">
+          <div class="form-label">产品型号</div>
+          <select class="select">
+            <option value="">请选择产品型号</option>
+            <option>139C</option>
+            <option>139B</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-item">
+          <div class="form-label"><span class="required">*</span> 芯片类型</div>
+          <select class="select">
+            <option value="">请选择芯片类型</option>
+            <option>加密</option>
+            <option>双算法</option>
+          </select>
+        </div>
+        <div class="form-item">
+          <div class="form-label">备注</div>
+          <input class="input" placeholder="选填">
+        </div>
+      </div>
+      <div class="form-item">
+        <div class="form-label"><span class="required">*</span> 是否付费</div>
+        <select class="select" style="width:50%;">
+          <option value="">请选择</option>
+          <option>付费</option>
+          <option>免费</option>
+        </select>
+      </div>
+
+      <div class="divider"></div>
+      <div style="font-size:13px;font-weight:600;color:var(--gray-8);margin-bottom:4px;">号段范围</div>
+      <div style="font-size:12px;color:var(--gray-6);margin-bottom:12px;">SN 号固定 16 位，IC 卡号固定 20 位，系统将校验位数及两段数量是否一致</div>
+
+      <div class="form-row">
+        <div class="form-item">
+          <div class="form-label"><span class="required">*</span> 起始 SN <span style="font-size:11px;color:var(--gray-6);">（16位）</span></div>
+          <input class="input" placeholder="请输入16位SN号" id="import-sn-start" oninput="calcImport()" style="font-family:monospace;" value="">
+          <div class="form-hint" id="sn-start-hint"></div>
+        </div>
+        <div class="form-item">
+          <div class="form-label"><span class="required">*</span> 终止 SN <span style="font-size:11px;color:var(--gray-6);">（16位）</span></div>
+          <input class="input" placeholder="请输入16位SN号" id="import-sn-end" oninput="calcImport()" style="font-family:monospace;" value="">
+          <div class="form-hint" id="sn-end-hint"></div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-item">
+          <div class="form-label"><span class="required">*</span> 起始 IC 卡号 <span style="font-size:11px;color:var(--gray-6);">（20位）</span></div>
+          <input class="input" placeholder="请输入20位IC卡号" id="import-ic-start" oninput="calcImport()" style="font-family:monospace;" value="">
+          <div class="form-hint" id="ic-start-hint"></div>
+        </div>
+        <div class="form-item">
+          <div class="form-label"><span class="required">*</span> 终止 IC 卡号 <span style="font-size:11px;color:var(--gray-6);">（20位）</span></div>
+          <input class="input" placeholder="请输入20位IC卡号" id="import-ic-end" oninput="calcImport()" style="font-family:monospace;" value="">
+          <div class="form-hint" id="ic-end-hint"></div>
+        </div>
+      </div>
+
+      <div id="import-calc" class="preview-box" style="margin-top:4px;">
+        <div class="preview-title">📊 系统计算</div>
+        <div style="font-size:13px;display:flex;gap:20px;flex-wrap:wrap;">
+          <span>SN 数量：<strong style="color:var(--primary);" id="import-count">—</strong> 张</span>
+          <span>IC 卡数量：<strong style="color:var(--primary);" id="import-ic-count">—</strong> 张</span>
+          <span id="import-match-hint"></span>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <div style="font-size:13px;font-weight:600;color:var(--gray-8);margin-bottom:12px;">支付宝同步</div>
+
+      <div class="switch-wrap">
+        <label class="switch">
+          <input type="checkbox" checked>
+          <span class="switch-slider"></span>
+        </label>
+        <div>
+          <div class="switch-label">是否同步支付宝号码池</div>
+          <div class="switch-desc">开启后，本批号段入库后将自动同步至支付宝号码池（用于业绩校验）</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeModal('modal-import')">取消</button>
+      <button class="btn btn-primary" onclick="submitImport()">确认入库</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ 弹窗：出库确认 ════════ -->
+<div class="modal-mask" id="modal-confirm-pickup">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="title">确认出库信息</div>
+      <button class="modal-close" onclick="closeModal('modal-confirm-pickup')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="preview-box">
+        <div class="preview-title">📋 出库信息确认</div>
+        <div class="preview-grid">
+          <div class="preview-item"><span class="pkey">号段批次：</span><br><span class="pval">SG-2026-002</span></div>
+          <div class="preview-item"><span class="pkey">取号数量：</span><br><span class="pval">500 张</span></div>
+          <div class="preview-item"><span class="pkey">起始 SN：</span><br><span class="pval">SN20008801</span></div>
+          <div class="preview-item"><span class="pkey">终止 SN：</span><br><span class="pval">SN20009300</span></div>
+          <div class="preview-item"><span class="pkey">产品型号：</span><br><span class="pval">NFC-标准版</span></div>
+          <div class="preview-item"><span class="pkey">一级渠道：</span><br><span class="pval" style="color:var(--warning);">三川电商</span></div>
+          <div class="preview-item"><span class="pkey">二级渠道：</span><br><span class="pval">支付宝小程序渠道</span></div>
+          <div class="preview-item"><span class="pkey">渠道类型：</span><br><span class="pval">直销</span></div>
+          <div class="preview-item"><span class="pkey">合同号：</span><br><span class="pval" style="color:var(--gray-5);">未填写（可补传）</span></div>
+        </div>
+      </div>
+      <div style="background:var(--primary-light);border-radius:var(--radius);padding:12px 16px;font-size:12px;color:var(--primary);">
+        ✓ 已勾选「同步支付宝渠道订单」，出库后将自动推送端外订单至支付宝进行风控备案。
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeModal('modal-confirm-pickup')">返回修改</button>
+      <button class="btn btn-success" onclick="submitPickup()">确认提交出库</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ 弹窗：号段详情 ════════ -->
+<div class="modal-mask" id="modal-detail">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <div class="title">号段详情 · <span id="detail-id" style="font-family:monospace;font-size:14px;"></span></div>
+      <button class="modal-close" onclick="closeModal('modal-detail')">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- 基本信息 -->
+      <div style="font-size:13px;font-weight:700;color:var(--gray-7);margin-bottom:12px;text-transform:uppercase;letter-spacing:.05em;">基本信息</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;">
+        <div style="background:var(--gray-2);border-radius:var(--radius);padding:12px;">
+          <div style="font-size:11px;color:var(--gray-6);margin-bottom:4px;">业主</div>
+          <div style="font-size:14px;font-weight:600;" id="detail-owner"></div>
+        </div>
+        <div style="background:var(--gray-2);border-radius:var(--radius);padding:12px;">
+          <div style="font-size:11px;color:var(--gray-6);margin-bottom:4px;">一级渠道</div>
+          <div style="font-size:14px;font-weight:600;" id="detail-region"></div>
+        </div>
+        <div style="background:var(--gray-2);border-radius:var(--radius);padding:12px;">
+          <div style="font-size:11px;color:var(--gray-6);margin-bottom:4px;">芯片类型</div>
+          <div style="font-size:14px;font-weight:600;" id="detail-chip"></div>
+        </div>
+        <div style="background:var(--gray-2);border-radius:var(--radius);padding:12px;">
+          <div style="font-size:11px;color:var(--gray-6);margin-bottom:4px;">入库日期</div>
+          <div style="font-size:14px;font-weight:600;" id="detail-date"></div>
+        </div>
+        <div style="background:var(--gray-2);border-radius:var(--radius);padding:12px;">
+          <div style="font-size:11px;color:var(--gray-6);margin-bottom:4px;">是否付费</div>
+          <div style="font-size:14px;font-weight:600;" id="detail-paid"></div>
+        </div>
+        <div style="background:var(--gray-2);border-radius:var(--radius);padding:12px;">
+          <div style="font-size:11px;color:var(--gray-6);margin-bottom:4px;">当前状态</div>
+          <div style="font-size:14px;font-weight:600;" id="detail-status"></div>
+        </div>
+      </div>
+
+      <!-- 号段范围 -->
+      <div style="font-size:13px;font-weight:700;color:var(--gray-7);margin-bottom:12px;text-transform:uppercase;letter-spacing:.05em;">号段范围</div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px;">
+        <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px;">
+          <div style="font-size:11px;color:var(--gray-6);margin-bottom:6px;">SN 范围</div>
+          <div style="display:flex;align-items:center;gap:10px;font-family:monospace;font-size:13px;">
+            <span id="detail-sn-start" style="background:var(--primary-light);color:var(--primary);padding:4px 8px;border-radius:4px;"></span>
+            <span style="color:var(--gray-5);">→</span>
+            <span id="detail-sn-end" style="background:var(--primary-light);color:var(--primary);padding:4px 8px;border-radius:4px;"></span>
+          </div>
+        </div>
+        <div style="border:1px solid var(--border);border-radius:var(--radius);padding:14px;">
+          <div style="font-size:11px;color:var(--gray-6);margin-bottom:6px;">IC 卡号范围</div>
+          <div style="display:flex;align-items:center;gap:10px;font-family:monospace;font-size:13px;">
+            <span id="detail-ic-start" style="background:var(--primary-light);color:var(--primary);padding:4px 8px;border-radius:4px;"></span>
+            <span style="color:var(--gray-5);">→</span>
+            <span id="detail-ic-end" style="background:var(--primary-light);color:var(--primary);padding:4px 8px;border-radius:4px;"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 使用进度 -->
+      <div style="font-size:13px;font-weight:700;color:var(--gray-7);margin-bottom:12px;text-transform:uppercase;letter-spacing:.05em;">使用进度</div>
+      <div style="border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:20px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+          <span style="font-size:13px;color:var(--gray-7);">已取号 / 总量</span>
+          <span style="font-size:13px;font-weight:600;" id="detail-progress-text"></span>
+        </div>
+        <div class="progress-bar" style="height:10px;border-radius:5px;">
+          <div class="progress-fill" id="detail-progress-fill" style="width:0%;height:100%;border-radius:5px;"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:10px;">
+          <span style="font-size:12px;color:var(--gray-6);">剩余可用：<strong id="detail-remain"></strong> 张</span>
+          <span style="font-size:12px;color:var(--gray-6);">利用率：<strong id="detail-rate"></strong></span>
+        </div>
+      </div>
+
+      <!-- 支付宝同步 -->
+      <div style="font-size:13px;font-weight:700;color:var(--gray-7);margin-bottom:12px;text-transform:uppercase;letter-spacing:.05em;">支付宝同步</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:20px;">
+        <div>
+          <div style="font-size:13px;font-weight:600;margin-bottom:2px;" id="detail-sync-status"></div>
+          <div style="font-size:12px;color:var(--gray-6);">最近同步时间：<span id="detail-sync-time"></span></div>
+        </div>
+        <button class="btn btn-default btn-sm" id="detail-sync-btn">手动同步</button>
+      </div>
+
+      <!-- 取号记录 -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div style="font-size:13px;font-weight:700;color:var(--gray-7);text-transform:uppercase;letter-spacing:.05em;">取号记录</div>
+        <button class="btn btn-default btn-sm" id="detail-download-btn" onclick="downloadDetail()" style="display:inline-flex;align-items:center;gap:5px;">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 1v9M8 10l-3-3M8 10l3-3M2 12v1a1 1 0 001 1h10a1 1 0 001-1v-1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          下载取号记录
+        </button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>取号时间</th><th>取号数量</th><th>起始 SN</th><th>终止 SN</th><th>渠道</th><th>合同号</th><th>操作人</th><th>操作</th></tr>
+          </thead>
+          <tbody id="detail-records"></tbody>
+        </table>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeModal('modal-detail')">关闭</button>
+      <button class="btn btn-primary" id="detail-pickup-btn">前往取号</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ 弹窗：录入记录删除（手机验证） ════════ -->
+<div class="modal-mask" id="modal-entry-delete">
+  <div class="modal" style="width:420px;">
+    <div class="modal-header">
+      <div class="title">删除录入记录</div>
+      <button class="modal-close" onclick="closeModal('modal-entry-delete')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:var(--radius);padding:12px 14px;margin-bottom:16px;font-size:12px;color:#92400e;">
+        ⚠ 删除后该条录入记录将不可恢复，请谨慎操作。
+      </div>
+
+      <!-- 未设置手机号 -->
+      <div id="ed-no-phone" style="display:none;background:var(--gray-2);border-radius:var(--radius);padding:20px;text-align:center;">
+        <div style="font-size:28px;margin-bottom:8px;">📵</div>
+        <div style="font-size:13px;font-weight:600;color:var(--gray-8);margin-bottom:6px;">需设置手机号</div>
+        <div style="font-size:12px;color:var(--gray-6);">创建人 <strong id="ed-op-name-no"></strong> 尚未绑定手机号，<br>无法发送验证码，请先设置手机号后再操作。</div>
+      </div>
+
+      <!-- 有手机号 -->
+      <div id="ed-has-phone">
+        <div style="font-size:13px;color:var(--gray-7);margin-bottom:12px;">
+          将向创建人 <strong id="ed-op-name"></strong> 的手机
+          <strong id="ed-op-phone" style="color:var(--primary);font-family:monospace;"></strong>
+          发送验证码
+        </div>
+        <div class="form-item">
+          <div class="form-label"><span class="required">*</span> 验证码</div>
+          <div style="display:flex;gap:8px;">
+            <input class="input" id="ed-code-input" placeholder="请输入6位验证码" maxlength="6" style="flex:1;font-family:monospace;letter-spacing:.2em;">
+            <button class="btn btn-default" id="ed-send-btn" onclick="sendEntryDeleteCode()" style="white-space:nowrap;min-width:110px;">获取验证码</button>
+          </div>
+          <div class="form-hint" id="ed-code-hint"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeModal('modal-entry-delete')">取消</button>
+      <button class="btn" id="ed-confirm-btn" style="background:var(--danger);color:#fff;border:none;border-radius:var(--radius);padding:0 20px;height:34px;font-size:13px;cursor:pointer;" onclick="confirmEntryDelete()">确认删除</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ 弹窗：删除取号记录（手机验证） ════════ -->
+<div class="modal-mask" id="modal-delete-record">
+  <div class="modal" style="width:420px;">
+    <div class="modal-header">
+      <div class="title">删除取号记录</div>
+      <button class="modal-close" onclick="closeModal('modal-delete-record')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:var(--radius);padding:12px 14px;margin-bottom:16px;font-size:12px;color:#92400e;">
+        ⚠ 删除后该条取号记录将不可恢复，相关号段使用量将同步回退。
+      </div>
+
+      <!-- 无手机号提示 -->
+      <div id="dr-no-phone" style="display:none;background:var(--gray-2);border-radius:var(--radius);padding:16px;text-align:center;">
+        <div style="font-size:28px;margin-bottom:8px;">📵</div>
+        <div style="font-size:13px;font-weight:600;color:var(--gray-8);margin-bottom:4px;">暂未维护手机号</div>
+        <div style="font-size:12px;color:var(--gray-6);">操作人 <strong id="dr-op-name-no"></strong> 尚未绑定手机号，无法发送验证码。<br>请联系管理员维护后再操作。</div>
+      </div>
+
+      <!-- 有手机号验证 -->
+      <div id="dr-has-phone">
+        <div style="font-size:13px;color:var(--gray-7);margin-bottom:12px;">
+          将向操作人 <strong id="dr-op-name"></strong> 的手机
+          <strong id="dr-op-phone" style="color:var(--primary);font-family:monospace;"></strong>
+          发送验证码
+        </div>
+        <div class="form-item">
+          <div class="form-label"><span class="required">*</span> 验证码</div>
+          <div style="display:flex;gap:8px;">
+            <input class="input" id="dr-code-input" placeholder="请输入6位验证码" maxlength="6" style="flex:1;font-family:monospace;letter-spacing:.2em;">
+            <button class="btn btn-default" id="dr-send-btn" onclick="sendRecordVerifyCode()" style="white-space:nowrap;min-width:110px;">获取验证码</button>
+          </div>
+          <div class="form-hint" id="dr-code-hint"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeModal('modal-delete-record')">取消</button>
+      <button class="btn" id="dr-confirm-btn" style="background:var(--danger);color:#fff;border:none;border-radius:var(--radius);padding:0 20px;height:34px;font-size:13px;cursor:pointer;" onclick="confirmDeleteRecord()">确认删除</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ 弹窗：导出号段列表 ════════ -->
+<div class="modal-mask" id="modal-export">
+  <div class="modal" style="width:460px;">
+    <div class="modal-header">
+      <div class="title">导出号段数据</div>
+      <button class="modal-close" onclick="closeModal('modal-export')">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="form-item">
+        <div class="form-label">导出范围</div>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px;">
+          <label style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;" id="export-scope-all-wrap">
+            <input type="radio" name="export-scope" value="all" checked onchange="updateExportScope()" style="accent-color:var(--primary);">
+            <div>
+              <div style="font-size:13px;font-weight:600;">全部号段</div>
+              <div style="font-size:11px;color:var(--gray-6);">导出当前列表所有批次（共 5 条）</div>
+            </div>
+          </label>
+          <label style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;" id="export-scope-filter-wrap">
+            <input type="radio" name="export-scope" value="filter" onchange="updateExportScope()" style="accent-color:var(--primary);">
+            <div>
+              <div style="font-size:13px;font-weight:600;">按当前筛选条件导出</div>
+              <div style="font-size:11px;color:var(--gray-6);">仅导出当前筛选结果</div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <div class="form-item" style="margin-top:16px;">
+        <div class="form-label">导出内容</div>
+        <div style="background:var(--primary-light);border:1px solid #bfdbfe;border-radius:var(--radius);padding:12px 16px;margin-top:6px;">
+          <div style="font-size:12px;color:var(--primary);font-weight:600;margin-bottom:8px;">✓ 默认导出全部字段内容</div>
+          <div style="font-size:12px;color:var(--gray-7);line-height:1.8;">
+            批次ID · 日期 · 业主 · 一级渠道 · 产品型号 · 芯片类型 · 是否付费 · 起止SN · 起止IC卡号 · 使用进度 · 取号明细 · 支付宝同步状态
+          </div>
+        </div>
+      </div>
+
+      <div class="form-item" style="margin-top:16px;">
+        <div class="form-label">文件格式</div>
+        <div style="display:flex;gap:10px;margin-top:4px;">
+          <label style="flex:1;display:flex;align-items:center;gap:8px;padding:10px 14px;border:2px solid var(--primary);border-radius:var(--radius);cursor:pointer;background:var(--primary-light);" id="fmt-excel-wrap">
+            <input type="radio" name="export-fmt" value="xlsx" checked onchange="updateFmt(this)" style="accent-color:var(--primary);">
+            <div>
+              <div style="font-size:13px;font-weight:700;color:var(--primary);">Excel (.xlsx)</div>
+              <div style="font-size:11px;color:var(--gray-6);">推荐，支持多 Sheet</div>
+            </div>
+          </label>
+          <label style="flex:1;display:flex;align-items:center;gap:8px;padding:10px 14px;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;" id="fmt-csv-wrap">
+            <input type="radio" name="export-fmt" value="csv" onchange="updateFmt(this)" style="accent-color:var(--primary);">
+            <div>
+              <div style="font-size:13px;font-weight:700;">CSV (.csv)</div>
+              <div style="font-size:11px;color:var(--gray-6);">纯文本，兼容性强</div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <div style="background:var(--gray-2);border-radius:var(--radius);padding:12px 14px;margin-top:8px;font-size:12px;color:var(--gray-7);line-height:1.8;" id="export-preview">
+        <strong>预计导出：</strong>5 条号段记录 · 包含基本信息 + 号段范围 + 使用进度 · Excel 格式
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeModal('modal-export')">取消</button>
+      <button class="btn btn-primary" onclick="doExport()" style="display:inline-flex;align-items:center;gap:6px;">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M8 1v9M8 10l-3-3M8 10l3-3M2 12v1a1 1 0 001 1h10a1 1 0 001-1v-1" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        确认导出
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ 弹窗：删除确认（未取号，可删）════════ -->
+<div class="modal-mask" id="modal-delete-confirm">
+  <div class="modal" style="width:420px;">
+    <div class="modal-header">
+      <div class="title" style="color:var(--danger);">⚠ 确认删除号段</div>
+      <button class="modal-close" onclick="closeModal('modal-delete-confirm')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="background:var(--danger-light);border:1px solid #fca5a5;border-radius:var(--radius);padding:14px 16px;margin-bottom:16px;">
+        <div style="font-size:13px;font-weight:700;color:var(--danger);margin-bottom:6px;">即将删除批次：<span id="delete-target-id"></span></div>
+        <div style="font-size:12px;color:#7f1d1d;line-height:1.8;">
+          该号段当前 <strong>0 张已取号</strong>，符合删除条件。<br>
+          删除后数据将无法恢复，请确认操作。
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--gray-7);line-height:1.8;margin-bottom:16px;">
+        <div>✓ 删除条件满足：取号数量为 0</div>
+        <div>✗ 删除后，该批次的号段范围将从系统中移除</div>
+        <div>✗ 若已同步至支付宝，需手动通知支付宝侧处理</div>
+      </div>
+
+      <!-- 无手机号 -->
+      <div id="ds-no-phone" style="display:none;background:var(--gray-2);border-radius:var(--radius);padding:16px;text-align:center;">
+        <div style="font-size:28px;margin-bottom:8px;">📵</div>
+        <div style="font-size:13px;font-weight:600;color:var(--gray-8);margin-bottom:4px;">暂未维护手机号</div>
+        <div style="font-size:12px;color:var(--gray-6);">操作人 <strong id="ds-op-name-no"></strong> 尚未绑定手机号，无法发送验证码。<br>请联系管理员维护后再操作。</div>
+      </div>
+
+      <!-- 有手机号 -->
+      <div id="ds-has-phone">
+        <div style="font-size:13px;color:var(--gray-7);margin-bottom:12px;">
+          将向录入人 <strong id="ds-op-name"></strong> 的手机
+          <strong id="ds-op-phone" style="color:var(--primary);font-family:monospace;"></strong>
+          发送验证码
+        </div>
+        <div class="form-item">
+          <div class="form-label"><span class="required">*</span> 验证码</div>
+          <div style="display:flex;gap:8px;">
+            <input class="input" id="ds-code-input" placeholder="请输入6位验证码" maxlength="6" style="flex:1;font-family:monospace;letter-spacing:.2em;">
+            <button class="btn btn-default" id="ds-send-btn" onclick="sendSegmentDeleteCode()" style="white-space:nowrap;min-width:110px;">获取验证码</button>
+          </div>
+          <div class="form-hint" id="ds-code-hint"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeModal('modal-delete-confirm')">取消</button>
+      <button class="btn" id="ds-confirm-btn" style="background:var(--danger);color:#fff;border:none;border-radius:var(--radius);padding:0 20px;height:34px;font-size:13px;cursor:pointer;" onclick="confirmDelete()">确认删除</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ 弹窗：不可删除提示（已取号）════════ -->
+<div class="modal-mask" id="modal-delete-blocked">
+  <div class="modal" style="width:420px;">
+    <div class="modal-header">
+      <div class="title">无法删除</div>
+      <button class="modal-close" onclick="closeModal('modal-delete-blocked')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="text-align:center;padding:8px 0 20px;">
+        <div style="font-size:40px;margin-bottom:12px;">🚫</div>
+        <div style="font-size:15px;font-weight:700;color:var(--gray-9);margin-bottom:8px;">该号段已存在取号记录，不可删除</div>
+        <div style="font-size:13px;color:var(--gray-7);">批次 <strong id="blocked-target-id"></strong> 已取号 <strong id="blocked-used" style="color:var(--danger);"></strong> 张</div>
+      </div>
+      <div style="background:var(--warning-light);border:1px solid #fde68a;border-radius:var(--radius);padding:14px 16px;">
+        <div style="font-size:12px;color:#92400e;line-height:1.8;">
+          <div style="font-weight:700;margin-bottom:6px;">删除规则说明</div>
+          <div>✅ <strong>允许删除：</strong>号段入库后，取号数量为 0（从未取号）</div>
+          <div style="margin-top:4px;">🚫 <strong>禁止删除：</strong>已有任意数量取号记录的号段，不可删除，防止数据丢失</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="closeModal('modal-delete-blocked')">我知道了</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ 弹窗：成功提示 ════════ -->
+<div class="modal-mask" id="modal-success">
+  <div class="modal" style="width:400px;">
+    <div class="modal-body" style="text-align:center;padding:40px 20px;">
+      <div style="font-size:48px;margin-bottom:16px;">✅</div>
+      <div style="font-size:18px;font-weight:700;margin-bottom:8px;" id="success-title">操作成功</div>
+      <div style="font-size:13px;color:var(--gray-7);margin-bottom:24px;" id="success-desc">操作已成功完成</div>
+      <button class="btn btn-primary" onclick="closeModal('modal-success')">知道了</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── 页面切换 ──
+function switchPage(pageId, navEl) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(pageId).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  if (navEl) navEl.classList.add('active');
+  const titles = {
+    'page-list': '号段入库',
+    'page-pickup': '取号出库',
+    'page-entry': '取号记录',
+    'page-sync': '发货明细同步',
+    'page-log': '支付宝同步记录'
+  };
+  document.getElementById('page-title').textContent = titles[pageId] || '';
+  // 同步更新需求面板内容
+  updateReqPanel(pageId);
+  // 录入记录页懒渲染
+  if (pageId === 'page-entry') renderEntryTable();
+}
+
+// ── Tab 切换 ──
+function switchTab(tabEl, contentId) {
+  tabEl.closest('.tabs').querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  tabEl.classList.add('active');
+  document.getElementById('tab-upload').style.display = 'none';
+  document.getElementById('tab-schedule').style.display = 'none';
+  document.getElementById(contentId).style.display = 'block';
+}
+
+// ── 弹窗 ──
+function openModal(id) { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+document.querySelectorAll('.modal-mask').forEach(mask => {
+  mask.addEventListener('click', e => { if (e.target === mask) mask.classList.remove('show'); });
+});
+
+// ── 复制起止SN ──
+function copySnRange() {
+  const start = document.getElementById('preview-sn-start').textContent;
+  const end = document.getElementById('preview-sn-end').textContent;
+  const text = `起始SN：${start}\n终止SN：${end}`;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = event.target.closest('button');
+    const orig = btn.innerHTML;
+    btn.innerHTML = '✓ 已复制';
+    btn.style.color = 'var(--success)';
+    setTimeout(() => { btn.innerHTML = orig; btn.style.color = ''; }, 1500);
+  });
+}
+
+// ── 取号计算 ──
+function calcPickup() {
+  const qty = parseInt(document.getElementById('pickup-qty').value) || 0;
+  const baseStart = 8801, total = 10000, used = 8800;
+  const newEnd = used + qty;
+  document.getElementById('preview-qty').textContent = qty;
+  document.getElementById('preview-sn-start').textContent = 'SN200' + String(baseStart).padStart(5,'0');
+  document.getElementById('preview-sn-end').textContent = 'SN200' + String(newEnd).padStart(5,'0');
+  document.getElementById('preview-ic-start').textContent = 'IC880' + String(baseStart).padStart(5,'0');
+  document.getElementById('preview-ic-end').textContent = 'IC880' + String(baseStart + qty - 1).padStart(5,'0');
+  const remain = total - used - qty;
+  document.getElementById('preview-remain').textContent = Math.max(0, remain);
+  document.getElementById('preview-rate').textContent = Math.min(100, Math.round((used + qty) / total * 100)) + '%';
+  if (remain < 0) {
+    document.getElementById('preview-remain').style.color = 'var(--danger)';
+  } else if (remain < 500) {
+    document.getElementById('preview-remain').style.color = 'var(--warning)';
+  } else {
+    document.getElementById('preview-remain').style.color = 'var(--gray-8)';
+  }
+}
+
+// ── 渠道类型联动 ──
+function updateChannelType(sel) {
+  const map = {'直销': '直销', '代理': '代理', '经销': '经销'};
+  const val = sel.options[sel.selectedIndex].value;
+  document.getElementById('channel-type').value = map[val] || '';
+}
+
+// ── 同步说明 ──
+function toggleSyncDesc() {
+  const checked = document.getElementById('sync-alipay').checked;
+  document.getElementById('sync-desc').textContent = checked
+    ? '开启后，本次出库记录将作为端外订单同步至支付宝（风控备案）'
+    : '关闭后，本次出库记录不会同步至支付宝';
+}
+
+// ── 录入计算（含位数校验）──
+function calcImport() {
+  const snStart = document.getElementById('import-sn-start').value;
+  const snEnd   = document.getElementById('import-sn-end').value;
+  const icStart = document.getElementById('import-ic-start').value;
+  const icEnd   = document.getElementById('import-ic-end').value;
+
+  const setHint = (id, val, len, required) => {
+    const el = document.getElementById(id);
+    if (!val) { el.textContent = ''; return true; }
+    if (val.length !== len) {
+      el.style.color = 'var(--danger)';
+      el.textContent = `✗ 当前 ${val.length} 位，需 ${len} 位`;
+      return false;
+    }
+    el.style.color = 'var(--success)';
+    el.textContent = `✓ ${len}位，格式正确`;
+    return true;
+  };
+
+  const snOk = setHint('sn-start-hint', snStart, 16) & setHint('sn-end-hint', snEnd, 16);
+  const icOk = setHint('ic-start-hint', icStart, 20) & setHint('ic-end-hint', icEnd, 20);
+
+  const matchEl = document.getElementById('import-match-hint');
+
+  function calcCount(start, end, len) {
+    if (start.length !== len || end.length !== len) return null;
+    const s = /^\d+$/.test(start) ? BigInt(start) : null;
+    const e = /^\d+$/.test(end)   ? BigInt(end)   : null;
+    if (s === null || e === null) return null;
+    const diff = e - s + 1n;
+    return diff > 0n ? diff : null;
+  }
+
+  const snCountBig = calcCount(snStart, snEnd, 16);
+  const icCountBig = calcCount(icStart, icEnd, 20);
+
+  document.getElementById('import-count').textContent     = snCountBig !== null ? Number(snCountBig).toLocaleString() : '—';
+  document.getElementById('import-ic-count').textContent  = icCountBig !== null ? Number(icCountBig).toLocaleString() : '—';
+
+  if (snCountBig !== null && icCountBig !== null) {
+    if (snCountBig === icCountBig) {
+      matchEl.style.color = 'var(--success)';
+      matchEl.textContent = '✓ 数量一致';
+    } else {
+      matchEl.style.color = 'var(--danger)';
+      matchEl.textContent = '✗ SN与IC卡数量不一致，请检查';
+    }
+  } else {
+    matchEl.textContent = '';
+  }
+}
+
+// ── 提交入库 ──
+function submitImport() {
+  closeModal('modal-import');
+  document.getElementById('success-title').textContent = '号段入库成功';
+  document.getElementById('success-desc').textContent = '已入库 20,000 张，并已同步至支付宝号码池';
+  openModal('modal-success');
+}
+
+// ── 提交出库 ──
+function submitPickup() {
+  closeModal('modal-confirm-pickup');
+  document.getElementById('success-title').textContent = '出库成功';
+  document.getElementById('success-desc').textContent = '已取号 500 张，端外订单已同步至支付宝';
+  openModal('modal-success');
+}
+
+// ── 导出相关 ──
+function updateFmt(radio) {
+  document.getElementById('fmt-excel-wrap').style.border = '1px solid var(--border)';
+  document.getElementById('fmt-excel-wrap').style.background = '#fff';
+  document.getElementById('fmt-csv-wrap').style.border = '1px solid var(--border)';
+  document.getElementById('fmt-csv-wrap').style.background = '#fff';
+  const wrap = radio.closest('label');
+  wrap.style.border = '2px solid var(--primary)';
+  wrap.style.background = 'var(--primary-light)';
+  updateExportPreview();
+}
+
+function updateExportScope() { updateExportPreview(); }
+
+function updateExportPreview() {
+  const fmt = document.querySelector('input[name="export-fmt"]:checked').value;
+  const scope = document.querySelector('input[name="export-scope"]:checked').value;
+  const withRecords = document.getElementById('export-include-records').checked;
+  const withSync = document.getElementById('export-include-sync').checked;
+  const count = scope === 'all' ? 5 : '筛选结果';
+  let cols = '基本信息 + 号段范围 + 使用进度';
+  if (withRecords) cols += ' + 取号明细';
+  if (withSync) cols += ' + 同步状态';
+  document.getElementById('export-preview').innerHTML =
+    `<strong>预计导出：</strong>${count} 条号段记录 · 包含 ${cols} · ${fmt.toUpperCase()} 格式`;
+}
+
+function doExport() {
+  const fmt = document.querySelector('input[name="export-fmt"]:checked').value;
+  const withRecords = document.getElementById('export-include-records').checked;
+
+  const rows = [
+    ['批次ID','入库日期','业主','一级渠道','芯片类型','是否付费','起始SN','终止SN','起始IC卡号','终止IC卡号','总量','已取号','剩余','利用率','状态','支付宝同步'],
+    ['SG-2026-001','2026-03-01','北京速通','三川电商','加密','付费','SN10000001','SN10005000','IC10000001','IC10005000',5000,5000,0,'100%','已耗尽','已同步'],
+    ['SG-2026-002','2026-03-15','三川科技','华南','NFC','付费','SN20000001','SN20010000','IC20000001','IC20010000',10000,8800,1200,'88%','即将耗尽','已同步'],
+    ['SG-2026-003','2026-04-01','北京速通','跨度','加密','免费','SN30000001','SN30008000','IC30000001','IC30008000',8000,3360,4640,'42%','正常','未同步'],
+    ['SG-2026-004','2026-04-10','三川科技','西南','NFC','付费','SN40000001','SN40020000','IC40000001','IC40020000',20000,1600,18400,'8%','正常','已同步'],
+    ['SG-2026-005','2026-04-13','北京速通','营业厅','加密','付费','SN60000001','SN60005000','IC60000001','IC60005000',5000,0,5000,'0%','正常','未同步'],
+  ];
+
+  const csv = rows.map(r => r.map(c => `"${c}"`).join(',')).join('\n');
+  const bom = '\uFEFF'; // UTF-8 BOM for Excel compatibility
+  const blob = new Blob([bom + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `号段列表_${new Date().toISOString().slice(0,10)}.${fmt === 'xlsx' ? 'csv' : 'csv'}`;
+  a.click();
+  URL.revokeObjectURL(url);
+
+  closeModal('modal-export');
+  document.getElementById('success-title').textContent = '导出成功';
+  document.getElementById('success-desc').textContent = '文件已下载至本地，请在下载文件夹中查看';
+  openModal('modal-success');
+}
+
+let currentDetailId = '';
+function downloadDetail() {
+  const records = mockRecords[currentDetailId] || [];
+  if (!records.length) { alert('暂无取号记录可下载'); return; }
+  const rows = [
+    ['取号时间','取号数量','起始SN','终止SN','渠道','合同号','操作人'],
+    ...records.map(r => [r.time, r.qty, r.snStart, r.snEnd, r.channel, r.contract, r.op])
+  ];
+  const csv = rows.map(r => r.map(c => `"${c}"`).join(',')).join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `取号记录_${currentDetailId}_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── 删除相关 ──
+// 模拟号段录入人信息（按批次ID）
+const mockSegmentCreators = {
+  'SG-2026-001': {op: '张晓晓', phone: '138****5678'},
+  'SG-2026-002': {op: '李大勇',  phone: ''},
+  'SG-2026-003': {op: '王芳',    phone: '139****2233'},
+  'SG-2026-004': {op: '张晓晓', phone: '138****5678'},
+  'SG-2026-005': {op: '张晓晓', phone: '138****5678'},
+};
+let dsCountdown = null;
+
+function openDeleteConfirm(id) {
+  document.getElementById('delete-target-id').textContent = id;
+  // 重置
+  clearInterval(dsCountdown);
+  document.getElementById('ds-code-input').value = '';
+  document.getElementById('ds-code-hint').textContent = '';
+  const sendBtn = document.getElementById('ds-send-btn');
+  sendBtn.disabled = false;
+  sendBtn.textContent = '获取验证码';
+
+  const creator = mockSegmentCreators[id] || {op: '未知', phone: ''};
+  if (creator.phone) {
+    document.getElementById('ds-no-phone').style.display = 'none';
+    document.getElementById('ds-has-phone').style.display = '';
+    document.getElementById('ds-confirm-btn').style.display = '';
+    document.getElementById('ds-op-name').textContent = creator.op;
+    document.getElementById('ds-op-phone').textContent = creator.phone;
+  } else {
+    document.getElementById('ds-no-phone').style.display = '';
+    document.getElementById('ds-has-phone').style.display = 'none';
+    document.getElementById('ds-confirm-btn').style.display = 'none';
+    document.getElementById('ds-op-name-no').textContent = creator.op;
+  }
+  openModal('modal-delete-confirm');
+}
+
+function sendSegmentDeleteCode() {
+  const btn = document.getElementById('ds-send-btn');
+  btn.disabled = true;
+  const hint = document.getElementById('ds-code-hint');
+  hint.style.color = 'var(--success)';
+  hint.textContent = '验证码已发送，请注意查收（模拟码：888888）';
+  let sec = 60;
+  btn.textContent = `${sec}s 后重发`;
+  dsCountdown = setInterval(() => {
+    sec--;
+    if (sec <= 0) {
+      clearInterval(dsCountdown);
+      btn.disabled = false;
+      btn.textContent = '重新获取';
+    } else {
+      btn.textContent = `${sec}s 后重发`;
+    }
+  }, 1000);
+}
+
+function openDeleteBlocked(id, used) {
+  document.getElementById('blocked-target-id').textContent = id;
+  document.getElementById('blocked-used').textContent = used.toLocaleString();
+  openModal('modal-delete-blocked');
+}
+
+function confirmDelete() {
+  const code = document.getElementById('ds-code-input').value.trim();
+  const hint = document.getElementById('ds-code-hint');
+  if (!code) {
+    hint.style.color = 'var(--danger)';
+    hint.textContent = '请先获取并输入验证码';
+    return;
+  }
+  if (code !== '888888') {
+    hint.style.color = 'var(--danger)';
+    hint.textContent = '验证码不正确，请重新输入';
+    return;
+  }
+  const id = document.getElementById('delete-target-id').textContent;
+  closeModal('modal-delete-confirm');
+  document.getElementById('success-title').textContent = '删除成功';
+  document.getElementById('success-desc').textContent = `号段批次 ${id} 已从系统中删除`;
+  openModal('modal-success');
+}
+
+// ── 模拟上传 ──
+function simulateUpload() {
+  alert('原型模拟：文件选择弹窗（实际连接文件上传接口）');
+}
+
+// ── 打开详情弹窗 ──
+const mockRecords = {
+  'SG-2026-001': [
+    {time:'2026-03-05 10:22',qty:2000,snStart:'SN10000001',snEnd:'SN10002000',channel:'支付宝小程序渠道',contract:'HT-2026-00101',op:'张晓晓',phone:'138****5678'},
+    {time:'2026-03-12 14:08',qty:2000,snStart:'SN10002001',snEnd:'SN10004000',channel:'安心办渠道',contract:'HT-2026-00118',op:'李大勇',phone:''},
+    {time:'2026-03-20 09:45',qty:1000,snStart:'SN10004001',snEnd:'SN10005000',channel:'支付宝小程序渠道',contract:'HT-2026-00132',op:'王芳',phone:'139****2233'},
+  ],
+  'SG-2026-002': [
+    {time:'2026-03-18 11:30',qty:5000,snStart:'SN20000001',snEnd:'SN20005000',channel:'支付宝小程序渠道',contract:'HT-2026-00201',op:'张晓晓',phone:'138****5678'},
+    {time:'2026-04-02 16:15',qty:3800,snStart:'SN20005001',snEnd:'SN20008800',channel:'安心办渠道',contract:'HT-2026-00245',op:'李大勇',phone:''},
+  ],
+  'SG-2026-003': [
+    {time:'2026-04-05 09:00',qty:3360,snStart:'SN30000001',snEnd:'SN30003360',channel:'线下经销渠道',contract:'HT-2026-00312',op:'张晓晓',phone:'138****5678'},
+  ],
+  'SG-2026-004': [
+    {time:'2026-04-11 13:20',qty:1600,snStart:'SN40000001',snEnd:'SN40001600',channel:'支付宝小程序渠道',contract:'HT-2026-00401',op:'张晓晓',phone:'138****5678'},
+  ],
+};
+
+function openDetail(d) {
+  currentDetailId = d.id;
+  document.getElementById('detail-id').textContent = d.id;
+  document.getElementById('detail-owner').textContent = d.owner;
+  document.getElementById('detail-region').textContent = d.channel || d.region || '—';
+  document.getElementById('detail-chip').textContent = d.chip;
+  document.getElementById('detail-date').textContent = d.date;
+  document.getElementById('detail-paid').innerHTML = d.paid
+    ? '<span class="tag tag-blue">付费</span>'
+    : '<span class="tag tag-gray">免费</span>';
+  const statusMap = {'已耗尽':'<span class="tag tag-red">已耗尽</span>','即将耗尽':'<span class="tag tag-orange">即将耗尽</span>','正常':'<span class="tag tag-green">正常</span>'};
+  document.getElementById('detail-status').innerHTML = statusMap[d.status] || d.status;
+
+  document.getElementById('detail-sn-start').textContent = d.snStart;
+  document.getElementById('detail-sn-end').textContent = d.snEnd;
+  document.getElementById('detail-ic-start').textContent = d.icStart;
+  document.getElementById('detail-ic-end').textContent = d.icEnd;
+
+  const pct = Math.round(d.used / d.total * 100);
+  const remain = d.total - d.used;
+  document.getElementById('detail-progress-text').textContent = d.used.toLocaleString() + ' / ' + d.total.toLocaleString() + ' 张';
+  document.getElementById('detail-remain').textContent = remain.toLocaleString();
+  document.getElementById('detail-rate').textContent = pct + '%';
+  const fill = document.getElementById('detail-progress-fill');
+  fill.style.width = pct + '%';
+  fill.className = 'progress-fill' + (pct >= 100 ? ' danger' : pct >= 85 ? ' warning' : '');
+
+  const syncEl = document.getElementById('detail-sync-status');
+  if (d.syncStatus === '已同步') {
+    syncEl.innerHTML = '<span style="color:var(--success);">✓ 已同步至支付宝号码池</span>';
+  } else {
+    syncEl.innerHTML = '<span style="color:var(--warning);">⚠ 尚未同步至支付宝</span>';
+  }
+  document.getElementById('detail-sync-time').textContent = d.syncTime;
+
+  const records = mockRecords[d.id] || [];
+  const tbody = document.getElementById('detail-records');
+  if (records.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--gray-6);padding:20px;">暂无取号记录</td></tr>';
+  } else {
+    tbody.innerHTML = records.map((r, idx) => `
+      <tr>
+        <td>${r.time}</td>
+        <td><strong>${r.qty.toLocaleString()}</strong> 张</td>
+        <td style="font-family:monospace;font-size:12px;">${r.snStart}</td>
+        <td style="font-family:monospace;font-size:12px;">${r.snEnd}</td>
+        <td>${r.channel}</td>
+        <td style="font-family:monospace;font-size:12px;">${r.contract}</td>
+        <td>${r.op}</td>
+        <td><button class="btn btn-xs" style="color:var(--danger);border:1px solid var(--danger);background:#fff;border-radius:4px;padding:2px 8px;font-size:11px;cursor:pointer;" onclick="openDeleteRecord(${idx})">删除</button></td>
+      </tr>
+    `).join('');
+  }
+
+  const pickupBtn = document.getElementById('detail-pickup-btn');
+  if (d.status === '已耗尽') {
+    pickupBtn.disabled = true;
+    pickupBtn.textContent = '库存已耗尽';
+    pickupBtn.className = 'btn btn-default';
+  } else {
+    pickupBtn.disabled = false;
+    pickupBtn.textContent = '前往取号';
+    pickupBtn.className = 'btn btn-primary';
+    pickupBtn.onclick = () => { closeModal('modal-detail'); switchPage('page-pickup', document.querySelectorAll('.nav-item')[1]); };
+  }
+
+  openModal('modal-detail');
+}
+
+// ── 录入记录数据 & 渲染 ──
+const entryData = [
+  {batch:'SG-2026-001',channel1:'三川电商',code:'19428032295529390',time:'2026-04-16 12:22:24',snStart:'1101602 0807143 32',snEnd:'1101602 0807143 321111',icStart:'1101602 0807143 32',icEnd:'1101602 0807143 321111',model:'136B',type:'线下收费站ETC禁用',name:'科比线下返白渠道',couponId:'—',couponName:'—',remark:'—',updateTime:'2026-04-16 12:22:24',creator:'周维加',operator:'周维加',phone:'138****5678'},
+  {batch:'SG-2026-001',channel1:'三川电商',code:'69',time:'2026-04-16 12:22:15',snStart:'1101602 0802702 48',snEnd:'1101602 0802702 481111',icStart:'1101602 0802702 48',icEnd:'1101602 0802702 481111',model:'139C',type:'电商',name:'三川自营电商',couponId:'—',couponName:'天猫',remark:'—',updateTime:'2026-04-16 12:22:15',creator:'开迎',operator:'开迎',phone:''},
+  {batch:'SG-2026-002',channel1:'支付宝中心化',code:'19428032295529390',time:'2026-04-12 12:02:37',snStart:'1101711 0802143 57',snEnd:'1101711 0802143 571111',icStart:'1101711 0802143 57',icEnd:'1101711 0802143 571111',model:'136B',type:'线下收费站ETC禁用',name:'科比线下返白渠道',couponId:'—',couponName:'—',remark:'—',updateTime:'2026-04-12 12:02:37',creator:'刘洪辉',operator:'刘洪辉',phone:'139****2233'},
+  {batch:'SG-2026-002',channel1:'支付宝中心化',code:'19428032295529390',time:'2026-04-11 11:41:16',snStart:'1101615 0809323 30',snEnd:'1101615 0809323 301111',icStart:'1101615 0809323 30',icEnd:'1101615 0809323 301111',model:'136B',type:'线下收费站ETC禁用',name:'科比线下返白渠道',couponId:'—',couponName:'—',remark:'—',updateTime:'2026-04-11 11:41:16',creator:'刘洪辉',operator:'刘洪辉',phone:'139****2233'},
+  {batch:'SG-2026-002',channel1:'支付宝中心化',code:'19428032295529390',time:'2026-04-11 11:40:58',snStart:'1101615 0809323 29',snEnd:'1101615 0809323 291111',icStart:'1101615 0809323 29',icEnd:'1101615 0809323 291111',model:'136B',type:'线下收费站ETC禁用',name:'科比线下返白渠道',couponId:'—',couponName:'—',remark:'—',updateTime:'2026-04-11 11:40:58',creator:'刘洪辉',operator:'刘洪辉',phone:'139****2233'},
+  {batch:'SG-2026-002',channel1:'支付宝中心化',code:'19428032295529390',time:'2026-04-11 11:40:51',snStart:'1101615 0809323 28',snEnd:'1101615 0809323 281111',icStart:'1101615 0809323 28',icEnd:'1101615 0809323 281111',model:'136B',type:'线下收费站ETC禁用',name:'科比线下返白渠道',couponId:'—',couponName:'—',remark:'—',updateTime:'2026-04-11 11:40:51',creator:'刘洪辉',operator:'刘洪辉',phone:'139****2233'},
+  {batch:'SG-2026-003',channel1:'跨度',code:'19428032295529390',time:'2026-04-11 11:40:31',snStart:'1101615 0809323 27',snEnd:'1101615 0809323 271111',icStart:'1101615 0809323 27',icEnd:'1101615 0809323 271111',model:'136B',type:'线下收费站ETC禁用',name:'科比线下返白渠道',couponId:'—',couponName:'—',remark:'—',updateTime:'2026-04-11 11:40:31',creator:'刘洪辉',operator:'刘洪辉',phone:'139****2233'},
+  {batch:'SG-2026-003',channel1:'跨度',code:'19428032295529390',time:'2026-04-11 11:40:04',snStart:'1101615 0809323 26',snEnd:'1101615 0809323 261111',icStart:'1101615 0809323 26',icEnd:'1101615 0809323 261111',model:'136B',type:'线下收费站ETC禁用',name:'科比线下返白渠道',couponId:'—',couponName:'—',remark:'—',updateTime:'2026-04-11 11:40:04',creator:'刘洪辉',operator:'刘洪辉',phone:'139****2233'},
+  {batch:'SG-2026-004',channel1:'抖音代运营',code:'19428032295529390',time:'2026-04-10 09:46:15',snStart:'1101615 0809235 69',snEnd:'1101615 0809235 691111',icStart:'1101615 0809235 69',icEnd:'1101615 0809235 691111',model:'136B',type:'线下收费站ETC禁用',name:'科比线下返白渠道',couponId:'—',couponName:'—',remark:'—',updateTime:'2026-04-10 09:46:15',creator:'刘洪辉',operator:'刘洪辉',phone:'139****2233'},
+  {batch:'SG-2026-004',channel1:'抖音代运营',code:'19428032295529390',time:'2026-04-10 09:30:22',snStart:'1101615 0809235 55',snEnd:'1101615 0809235 551111',icStart:'1101615 0809235 55',icEnd:'1101615 0809235 551111',model:'139B',type:'线下收费站ETC禁用',name:'科比线下返白渠道',couponId:'CPN-001',couponName:'路费券A-满100减20',remark:'—',updateTime:'2026-04-10 09:30:22',creator:'王芳',operator:'王芳',phone:'137****8899'},
+];
+
+function renderEntryTable() {
+  const tbody = document.getElementById('entry-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = entryData.map((r, i) => `
+    <tr>
+      <td style="font-family:monospace;font-size:11px;white-space:nowrap;">${r.batch}</td>
+      <td style="white-space:nowrap;">${r.channel1}</td>
+      <td style="font-family:monospace;font-size:11px;">${r.code}</td>
+      <td style="font-size:11px;white-space:nowrap;">${r.time}</td>
+      <td style="font-family:monospace;font-size:11px;">${r.snStart}</td>
+      <td style="font-family:monospace;font-size:11px;">${r.snEnd}</td>
+      <td style="font-family:monospace;font-size:11px;">${r.icStart}</td>
+      <td style="font-family:monospace;font-size:11px;">${r.icEnd}</td>
+      <td>${r.model}</td>
+      <td style="font-size:11px;">${r.type}</td>
+      <td style="font-size:11px;">${r.name}</td>
+      <td style="font-size:11px;color:var(--gray-6);">${r.couponId}</td>
+      <td style="font-size:11px;">${r.couponName}</td>
+      <td style="font-size:11px;color:var(--gray-6);">${r.remark}</td>
+      <td style="font-size:11px;white-space:nowrap;color:var(--gray-6);">${r.updateTime}</td>
+      <td>${r.creator}</td>
+      <td>${r.operator}</td>
+      <td><button class="btn btn-xs" style="color:var(--danger);border:1px solid var(--danger);background:#fff;border-radius:4px;padding:2px 8px;font-size:11px;cursor:pointer;" onclick="openEntryDelete({op:'${r.creator}',phone:'${r.phone}'})">删除</button></td>
+    </tr>
+  `).join('');
+}
+
+// 页面切换时渲染录入记录
+document.addEventListener('DOMContentLoaded', () => { renderEntryTable(); });
+
+// ── 录入记录删除 ──
+let edCountdown = null;
+
+function openEntryDelete(info) {
+  clearInterval(edCountdown);
+  document.getElementById('ed-code-input').value = '';
+  document.getElementById('ed-code-hint').textContent = '';
+  const sendBtn = document.getElementById('ed-send-btn');
+  sendBtn.disabled = false;
+  sendBtn.textContent = '获取验证码';
+
+  if (info.phone) {
+    document.getElementById('ed-no-phone').style.display = 'none';
+    document.getElementById('ed-has-phone').style.display = '';
+    document.getElementById('ed-confirm-btn').style.display = '';
+    document.getElementById('ed-op-name').textContent = info.op;
+    document.getElementById('ed-op-phone').textContent = info.phone;
+  } else {
+    document.getElementById('ed-no-phone').style.display = '';
+    document.getElementById('ed-has-phone').style.display = 'none';
+    document.getElementById('ed-confirm-btn').style.display = 'none';
+    document.getElementById('ed-op-name-no').textContent = info.op;
+  }
+  openModal('modal-entry-delete');
+}
+
+function sendEntryDeleteCode() {
+  const btn = document.getElementById('ed-send-btn');
+  btn.disabled = true;
+  const hint = document.getElementById('ed-code-hint');
+  hint.style.color = 'var(--success)';
+  hint.textContent = '验证码已发送，请注意查收（模拟码：888888）';
+  let sec = 60;
+  btn.textContent = `${sec}s 后重发`;
+  edCountdown = setInterval(() => {
+    sec--;
+    if (sec <= 0) { clearInterval(edCountdown); btn.disabled = false; btn.textContent = '重新获取'; }
+    else btn.textContent = `${sec}s 后重发`;
+  }, 1000);
+}
+
+function confirmEntryDelete() {
+  const code = document.getElementById('ed-code-input').value.trim();
+  const hint = document.getElementById('ed-code-hint');
+  if (!code) { hint.style.color = 'var(--danger)'; hint.textContent = '请先获取并输入验证码'; return; }
+  if (code !== '888888') { hint.style.color = 'var(--danger)'; hint.textContent = '验证码不正确，请重新输入'; return; }
+  closeModal('modal-entry-delete');
+  document.getElementById('success-title').textContent = '删除成功';
+  document.getElementById('success-desc').textContent = '录入记录已从系统中删除';
+  openModal('modal-success');
+}
+
+// ── 删除取号记录 ──
+let deleteRecordIdx = null;
+let drCountdown = null;
+
+function openDeleteRecord(idx) {
+  deleteRecordIdx = idx;
+  const records = mockRecords[currentDetailId] || [];
+  const r = records[idx];
+  clearInterval(drCountdown);
+  document.getElementById('dr-code-input').value = '';
+  document.getElementById('dr-code-hint').textContent = '';
+  document.getElementById('dr-send-btn').disabled = false;
+  document.getElementById('dr-send-btn').textContent = '获取验证码';
+
+  if (r.phone) {
+    document.getElementById('dr-no-phone').style.display = 'none';
+    document.getElementById('dr-has-phone').style.display = '';
+    document.getElementById('dr-confirm-btn').style.display = '';
+    document.getElementById('dr-op-name').textContent = r.op;
+    document.getElementById('dr-op-phone').textContent = r.phone;
+  } else {
+    document.getElementById('dr-no-phone').style.display = '';
+    document.getElementById('dr-has-phone').style.display = 'none';
+    document.getElementById('dr-confirm-btn').style.display = 'none';
+    document.getElementById('dr-op-name-no').textContent = r.op;
+  }
+  openModal('modal-delete-record');
+}
+
+function sendRecordVerifyCode() {
+  const btn = document.getElementById('dr-send-btn');
+  btn.disabled = true;
+  document.getElementById('dr-code-hint').style.color = 'var(--success)';
+  document.getElementById('dr-code-hint').textContent = '验证码已发送，请注意查收（模拟码：888888）';
+  let sec = 60;
+  btn.textContent = `${sec}s 后重发`;
+  drCountdown = setInterval(() => {
+    sec--;
+    if (sec <= 0) {
+      clearInterval(drCountdown);
+      btn.disabled = false;
+      btn.textContent = '重新获取';
+    } else {
+      btn.textContent = `${sec}s 后重发`;
+    }
+  }, 1000);
+}
+
+function confirmDeleteRecord() {
+  const code = document.getElementById('dr-code-input').value.trim();
+  const hint = document.getElementById('dr-code-hint');
+  if (!code) {
+    hint.style.color = 'var(--danger)';
+    hint.textContent = '请先获取并输入验证码';
+    return;
+  }
+  if (code !== '888888') {
+    hint.style.color = 'var(--danger)';
+    hint.textContent = '验证码不正确，请重新输入';
+    return;
+  }
+  // 执行删除
+  const records = mockRecords[currentDetailId];
+  records.splice(deleteRecordIdx, 1);
+  closeModal('modal-delete-record');
+  // 刷新记录列表
+  const tbody = document.getElementById('detail-records');
+  if (records.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--gray-6);padding:20px;">暂无取号记录</td></tr>';
+  } else {
+    tbody.innerHTML = records.map((r, idx) => `
+      <tr>
+        <td>${r.time}</td>
+        <td><strong>${r.qty.toLocaleString()}</strong> 张</td>
+        <td style="font-family:monospace;font-size:12px;">${r.snStart}</td>
+        <td style="font-family:monospace;font-size:12px;">${r.snEnd}</td>
+        <td>${r.channel}</td>
+        <td style="font-family:monospace;font-size:12px;">${r.contract}</td>
+        <td>${r.op}</td>
+        <td><button class="btn btn-xs" style="color:var(--danger);border:1px solid var(--danger);background:#fff;border-radius:4px;padding:2px 8px;font-size:11px;cursor:pointer;" onclick="openDeleteRecord(${idx})">删除</button></td>
+      </tr>
+    `).join('');
+  }
+  hint.textContent = '';
+}
+// ── 需求面板 ──
+const reqContent = {
+  'page-list': {
+    title: '号段入库 · 列表页',
+    sections: [
+      {
+        heading: '📊 统计卡片（4个）',
+        items: [
+          '号段总批次：系统内所有批次总数，副标展示"本月新增 N 批"',
+          '号段总量（张）：全部批次 SN 总数之和，副标展示"累计入库"',
+          '已取号量（张）：所有批次已出库 SN 之和，副标展示利用率 %',
+          '库存耗尽批次：used = total 的批次数，副标展示"需补充充值"',
+        ]
+      },
+      {
+        heading: '🔍 筛选栏',
+        items: [
+          '关键词搜索：模糊匹配起始 SN / 业主',
+          '全部状态：正常 / 即将耗尽 / 已耗尽',
+          '全部芯片：加密 / 双算法',
+          '全部发行方：下拉单选',
+          '全部一级渠道：下拉单选',
+          '全部产品型号：139C / 139B',
+          '导出按钮：默认导出全部字段（含批次ID/日期/业主/一级渠道/产品型号/芯片类型/是否付费/起止SN/起止IC卡号/使用进度/取号明细/支付宝同步状态），支持按筛选结果导出',
+          '录入号段按钮：打开号段入库弹窗',
+        ]
+      },
+      {
+        heading: '📋 列表字段',
+        items: [
+          '批次ID / 入库日期 / 业主 / 一级渠道 / 芯片类型 / 起始SN / 终止SN',
+          '使用进度：进度条 + 已取号/总量，≥85% 橙色进度条，100% 红色进度条',
+          '是否付费：付费（蓝标）/ 免费（灰标）',
+          '支付宝同步：绿点已同步 / 橙点未同步',
+          '状态：正常（绿）/ 即将耗尽（橙）/ 已耗尽（红）',
+        ]
+      },
+      {
+        heading: '🎨 行颜色规则',
+        items: [
+          '已耗尽（used = total）：整行灰底',
+          '即将耗尽（used/total ≥ 85%）：整行橙底',
+          '正常：白底',
+        ]
+      },
+      {
+        heading: '⚙️ 操作列规则',
+        items: [
+          '取号按钮：仅 used < total 时显示，点击跳转取号出库页',
+          '详情按钮：任意状态均可点击，打开号段详情弹窗',
+          '删除（used > 0）：按钮置灰不可点，点击弹窗提示"已有取号记录，不可删除"',
+          '删除（used = 0）：红色按钮可点，弹窗展示录入人姓名+脱敏手机号，需获取验证码后确认',
+          '无手机号时：隐藏确认按钮，提示"暂未维护手机号，请联系管理员"',
+        ]
+      },
+    ]
+  },
+  'page-pickup': {
+    title: '取号出库 · 填写信息',
+    sections: [
+      {
+        heading: '📌 步骤说明',
+        items: [
+          'Step 1 选择号段：在列表页点击「取号」按钮进入，已预选目标批次',
+          'Step 2 填写取号信息（当前页）',
+          'Step 3 确认出库：核对信息后提交',
+        ]
+      },
+      {
+        heading: '📝 必填字段',
+        items: [
+          '取号数量：正整数，不超过剩余可用量，输入后右侧实时计算起止 SN / IC 卡号',
+        ]
+      },
+      {
+        heading: '📝 选填字段（均默认为空/未选中）',
+        items: [
+          '产品型号：下拉选择（139C / 139B），默认不选',
+          '二级渠道分类：下拉选择，选后系统自动带出渠道类型',
+          '渠道类型：只读自动带出，不可手动修改',
+          '合同号：文本输入，可备货后补传',
+          '路费券：下拉选择，逻辑方案待相关人员提供',
+          '是否同步支付宝渠道订单：开关，默认【关闭】；开启后出库记录推送支付宝做风控备案',
+        ]
+      },
+      {
+        heading: '⚠️ 取号记录同步规则',
+        items: [
+          '渠道类型 = 线下：本次取号记录【不同步】至「取号记录」页，仅保留在号段详情的取号明细中',
+          '渠道类型 = 非线下：正常同步至「取号记录」页',
+          '渠道类型由二级渠道自动带出，操作人无法手动修改',
+        ]
+      },
+      {
+        heading: '📋 右侧自动计算面板',
+        items: [
+          '实时计算：起始 SN / 终止 SN / 起始 IC 卡号 / 终止 IC 卡号',
+          '展示取号后剩余量 / 利用率',
+          '「复制起止SN」按钮：点击将"起始SN：xxx\n终止SN：xxx"写入剪贴板',
+        ]
+      },
+      {
+        heading: '✅ 出库确认弹窗字段',
+        items: [
+          '展示：号段批次 / 取号数量 / 起始SN / 终止SN / 产品型号',
+          '展示：一级渠道 / 二级渠道 / 渠道类型 / 合同号（未填写时标注"可补传"）',
+          '若已开启支付宝同步：展示蓝色提示文字',
+        ]
+      },
+    ]
+  },
+  'page-sync': {
+    title: '发货明细同步',
+    sections: [
+      {
+        heading: '📌 功能说明',
+        items: [
+          '将已出库的号段批次同步到外部系统（菜鸟 / 支付宝）',
+          '支持手动上传发货明细文件，或配置定时自动同步',
+        ]
+      },
+      {
+        heading: '📤 手动上传',
+        items: [
+          '上传格式：Excel / CSV，文件大小 ≤ 10MB',
+          '上传后系统自动解析，展示预览（订单数 / 号段数 / 校验状态）',
+          '校验规则：SN 须在系统已入库范围内；重复提交同一合同号需二次确认',
+          '上传成功后触发同步任务，状态变为「同步中」',
+        ]
+      },
+      {
+        heading: '⏱️ 定时同步',
+        items: [
+          '可配置同步频率：每日 / 每 N 小时',
+          '配置生效后，系统在指定时间自动拉取待同步记录并推送',
+          '同步失败自动重试 3 次，仍失败则告警通知',
+        ]
+      },
+      {
+        heading: '⚠️ 异常处理',
+        items: [
+          'SN 不在系统范围内：整行标红，提示「号段未入库」',
+          '合同号重复：弹窗确认是否覆盖',
+          '网络超时：记录失败条目，支持单独重推',
+        ]
+      },
+    ]
+  },
+  'page-entry': {
+    title: '取号记录',
+    sections: [
+      {
+        heading: '📌 数据来源规则',
+        items: [
+          '取号出库时，渠道类型 = 线上（非线下）的记录，自动同步至本页',
+          '渠道类型 = 线下 的取号记录【不进入本页】，仅在号段详情的取号明细中可查',
+          '线下/线上由二级渠道自动带出，取号时系统自动判断是否写入本表',
+        ]
+      },
+      {
+        heading: '🔍 筛选栏',
+        items: [
+          '批次ID：精确匹配',
+          '设备SN / 开始SN / 结束SN：文本搜索',
+          '一级渠道 / 所属渠道：下拉筛选',
+          '录入时间：日期范围',
+          '渠道类型 / 发行方：下拉筛选',
+          '路费券名称 / 备注 / 创建人：文本搜索',
+        ]
+      },
+      {
+        heading: '📋 列表字段',
+        items: [
+          '批次ID / 一级渠道 / 渠道编码 / 录入时间',
+          '开始SN / 结束SN / 开始卡号 / 结束卡号',
+          '设备型号 / 渠道类型 / 渠道名称',
+          '路费券id / 路费券名称 / 备注 / 更新时间',
+          '创建人 / 录入人 / 操作（删除）',
+        ]
+      },
+      {
+        heading: '🗑️ 删除规则',
+        items: [
+          '点击删除后弹出验证弹窗',
+          '有手机号：展示创建人姓名 + 脱敏手机号，需获取验证码后确认删除',
+          '无手机号：展示「需设置手机号」提示，隐藏确认按钮',
+          '验证码正确后删除，弹出成功提示',
+        ]
+      },
+    ]
+  },
+  'page-log': {
+    title: '同步记录',
+    sections: [
+      {
+        heading: '📋 列表字段',
+        items: [
+          '同步时间 / 批次号 / 同步类型（菜鸟 / 支付宝）/ 条目数 / 成功数 / 失败数 / 状态 / 操作人',
+          '状态：同步中（蓝）/ 成功（绿）/ 部分失败（橙）/ 失败（红）',
+        ]
+      },
+      {
+        heading: '🔍 筛选',
+        items: [
+          '时间范围 / 同步类型 / 状态筛选',
+          '支持导出同步记录明细',
+        ]
+      },
+      {
+        heading: '📄 详情查看',
+        items: [
+          '点击「详情」可查看该次同步的每一条记录（SN / 合同号 / 同步结果 / 失败原因）',
+          '失败条目支持单独重推',
+        ]
+      },
+      {
+        heading: '⚠️ 异常处理',
+        items: [
+          '部分失败：整批标记「部分失败」，详情内逐条展示失败原因',
+          '全部失败：整批标记「失败」，支持一键重推',
+          '重推时校验数据有效性，避免重复写入',
+        ]
+      },
+    ]
+  },
+};
+
+// 号段详情 & 入库弹窗需求
+const reqContentModal = {
+  'modal-import': {
+    title: '号段入库 · 入库弹窗',
+    sections: [
+      {
+        heading: '📝 必填字段',
+        items: [
+          '入库日期：默认当天，可手动修改',
+          '业主：下拉选择，当前仅"北京速通"',
+          '一级渠道分类：下拉选择（三川电商 / 跨度 / 营业厅 / 支付宝中心化 / 抖音代运营）',
+          '芯片类型：加密 / 双算法',
+          '是否付费：付费 / 免费',
+          '起始 SN / 终止 SN：纯数字，固定 16 位，实时校验位数',
+          '起始 IC 卡号 / 终止 IC 卡号：纯数字，固定 20 位，实时校验位数',
+          '以上字段打开弹窗时均默认为空/未选择状态',
+        ]
+      },
+      {
+        heading: '📝 选填字段',
+        items: [
+          '产品型号：下拉选择（139C / 139B），默认不选',
+          '备注：文本输入，默认为空，placeholder 显示"选填"',
+        ]
+      },
+      {
+        heading: '🔢 数量校验规则',
+        items: [
+          'SN：输入时实时校验是否 16 位，不足或超过则显示红色错误提示',
+          'IC 卡号：输入时实时校验是否 20 位，不足或超过则显示红色错误提示',
+          'SN 数量 ≠ IC 卡数量：显示红色「数量不一致」警告，阻止提交',
+          '系统自动计算数量 = 终止值 - 起始值 + 1（使用 BigInt 处理大数精度）',
+          '起止 SN 范围与已有批次重叠：提示「号段范围冲突，请检查」，阻止提交',
+        ]
+      },
+      {
+        heading: '🔄 支付宝同步',
+        items: [
+          '开关默认关闭，开启后提交时自动同步本批号段至支付宝号码池',
+          '关闭则仅入库，不推送支付宝',
+        ]
+      },
+    ]
+  },
+  'modal-detail': {
+    title: '号段详情弹窗',
+    sections: [
+      {
+        heading: '📋 基本信息（6格卡片）',
+        items: [
+          '业主 / 一级渠道 / 芯片类型 / 入库日期 / 是否付费 / 当前状态',
+        ]
+      },
+      {
+        heading: '📐 SN / IC 范围',
+        items: [
+          'SN范围：起始 SN → 终止 SN，蓝色标签展示',
+          'IC卡号范围：起始 IC → 终止 IC，蓝色标签展示',
+        ]
+      },
+      {
+        heading: '📊 使用进度',
+        items: [
+          '进度条 + 已取号/总量文字，颜色规则同列表页（≥85%橙，100%红）',
+          '剩余可用数量 / 利用率百分比',
+        ]
+      },
+      {
+        heading: '🔄 支付宝同步',
+        items: [
+          '展示同步状态（已同步绿色 / 未同步橙色）及最近同步时间',
+          '「手动同步」按钮：点击触发即时同步',
+        ]
+      },
+      {
+        heading: '📄 取号记录表格',
+        items: [
+          '字段：取号时间 / 数量 / 起始SN / 终止SN / 渠道 / 合同号 / 操作人 / 操作',
+          '「下载取号记录」按钮：导出当前批次所有取号明细为 CSV',
+          '底部「前往取号」按钮：号段已耗尽时置灰',
+        ]
+      },
+      {
+        heading: '🗑️ 删除取号记录',
+        items: [
+          '每条记录末尾有红色「删除」按钮',
+          '有手机号：弹窗展示操作人姓名+脱敏手机号，需获取6位验证码确认后删除',
+          '无手机号：展示「暂未维护手机号」提示，隐藏确认按钮，需联系管理员',
+          '删除成功后列表实时刷新，不需要重新打开弹窗',
+        ]
+      },
+    ]
+  },
+};
+
+let reqPanelOpen = false;
+let currentReqKey = 'page-list';
+
+function buildReqHTML(data) {
+  if (!data) return '<div style="padding:40px 24px;text-align:center;color:var(--gray-6);">暂无需求说明</div>';
+  return `
+    <div style="padding:0 20px 24px;">
+      ${data.sections.map(s => `
+        <div style="margin-bottom:20px;">
+          <div style="font-size:12px;font-weight:700;color:var(--gray-8);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--gray-4);">${s.heading}</div>
+          <ul style="margin:0;padding-left:16px;list-style:none;">
+            ${s.items.map(item => `
+              <li style="font-size:12px;color:var(--gray-8);line-height:1.8;padding:2px 0;display:flex;gap:6px;">
+                <span style="color:var(--gray-6);flex-shrink:0;">·</span>
+                <span>${item}</span>
+              </li>
+            `).join('')}
+          </ul>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function updateReqPanel(pageId) {
+  currentReqKey = pageId;
+  if (!reqPanelOpen) return;
+  const data = reqContent[pageId];
+  document.getElementById('req-panel-title').textContent = data ? data.title : '需求说明';
+  document.getElementById('req-panel-body').innerHTML = buildReqHTML(data);
+}
+
+function openReqPanel(key) {
+  key = key || currentReqKey;
+  const data = reqContent[key] || reqContentModal[key];
+  document.getElementById('req-panel-title').textContent = data ? data.title : '需求说明';
+  document.getElementById('req-panel-body').innerHTML = buildReqHTML(data);
+  document.getElementById('req-drawer').classList.add('open');
+  document.getElementById('req-toggle-btn').style.display = 'none';
+  reqPanelOpen = true;
+}
+
+function closeReqPanel() {
+  document.getElementById('req-drawer').classList.remove('open');
+  document.getElementById('req-toggle-btn').style.display = '';
+  reqPanelOpen = false;
+}
+</script>
+
+<!-- ── 需求抽屉 ── -->
+<style>
+#req-toggle-btn {
+  position: fixed;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 800;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 8px 0 0 8px;
+  padding: 10px 8px;
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1.5;
+  writing-mode: vertical-rl;
+  letter-spacing: .08em;
+  box-shadow: -2px 0 8px rgba(0,0,0,.15);
+  transition: background .2s;
+}
+#req-toggle-btn:hover { background: var(--primary-hover); }
+
+#req-drawer {
+  position: fixed;
+  top: 0; right: -380px;
+  width: 380px;
+  height: 100vh;
+  background: #fff;
+  box-shadow: -4px 0 20px rgba(0,0,0,.12);
+  z-index: 900;
+  display: flex;
+  flex-direction: column;
+  transition: right .28s cubic-bezier(.4,0,.2,1);
+}
+#req-drawer.open { right: 0; }
+
+#req-drawer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--gray-4);
+  background: var(--gray-2);
+  flex-shrink: 0;
+}
+#req-drawer-head .req-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gray-9);
+}
+#req-drawer-head .req-badge {
+  font-size: 10px;
+  background: var(--primary);
+  color: #fff;
+  border-radius: 4px;
+  padding: 1px 6px;
+  margin-left: 8px;
+}
+#req-drawer-head .close-btn {
+  background: none;
+  border: none;
+  font-size: 16px;
+  color: var(--gray-7);
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  line-height: 1;
+}
+#req-drawer-head .close-btn:hover { background: var(--gray-4); color: var(--gray-9); }
+
+#req-panel-body {
+  flex: 1;
+  overflow-y: auto;
+  padding-top: 16px;
+}
+#req-panel-body ul { padding-left: 0; }
+
+.req-page-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--gray-4);
+  background: var(--gray-2);
+  flex-shrink: 0;
+  overflow-x: auto;
+}
+.req-page-tab {
+  font-size: 11px;
+  padding: 7px 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  color: var(--gray-7);
+  border-bottom: 2px solid transparent;
+  transition: all .15s;
+}
+.req-page-tab:hover { color: var(--primary); }
+.req-page-tab.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
+</style>
+
+<button id="req-toggle-btn" onclick="openReqPanel()">产品需求</button>
+
+<div id="req-drawer">
+  <div id="req-drawer-head">
+    <div style="display:flex;align-items:center;">
+      <span class="req-title" id="req-panel-title">号段入库 · 列表页</span>
+      <span class="req-badge">PRD</span>
+    </div>
+    <button class="close-btn" onclick="closeReqPanel()">✕</button>
+  </div>
+  <div class="req-page-tabs">
+    <div class="req-page-tab active" onclick="switchReqTab('page-list',this)">列表页</div>
+    <div class="req-page-tab" onclick="switchReqTab('modal-import',this)">入库弹窗</div>
+    <div class="req-page-tab" onclick="switchReqTab('page-pickup',this)">取号出库</div>
+    <div class="req-page-tab" onclick="switchReqTab('modal-detail',this)">号段详情</div>
+    <div class="req-page-tab" onclick="switchReqTab('page-entry',this)">录入记录</div>
+    <div class="req-page-tab" onclick="switchReqTab('page-sync',this)">明细同步</div>
+    <div class="req-page-tab" onclick="switchReqTab('page-log',this)">同步记录</div>
+  </div>
+  <div id="req-panel-body"></div>
+</div>
+
+<script>
+function switchReqTab(key, el) {
+  document.querySelectorAll('.req-page-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  const data = reqContent[key] || reqContentModal[key];
+  document.getElementById('req-panel-title').textContent = data ? data.title : '需求说明';
+  document.getElementById('req-panel-body').innerHTML = buildReqHTML(data);
+}
+// 初始化面板内容
+document.getElementById('req-panel-body').innerHTML = buildReqHTML(reqContent['page-list']);
+</script>
+
+</body>
+</html>
